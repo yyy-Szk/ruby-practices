@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'date'
+require 'optparse'
 
 def beginning_of_month(date)
   Date.new(date.year, date.month, 1)
