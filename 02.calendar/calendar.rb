@@ -9,7 +9,15 @@ def beginning_of_month(date)
 end
 
 def end_of_month(date)
-  Date.new(date.year, date.month + 1, 1) - 1
+  if date.month == 12
+    year = date.year + 1
+    month = 1
+  else
+    year = date.year
+    month = date.month + 1
+  end
+  
+  Date.new(year, month, 1) - 1
 end
 
 today = Date.today
