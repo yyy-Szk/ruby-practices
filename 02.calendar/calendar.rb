@@ -3,6 +3,7 @@
 require 'date'
 require 'optparse'
 
+# これモンキーパッチってやつでもっといい感じに書けるのでは？ > Dateクラス
 def beginning_of_month(date)
   Date.new(date.year, date.month, 1)
 end
@@ -13,9 +14,19 @@ end
 
 today = Date.today
 calendar_width = 20
-date_range = beginning_of_month(today)..end_of_month(today)
 
-puts "#{today.month}月 #{today.year}".center(calendar_width)
+opt = OptionParser.new
+month_option = nil
+year_option = nil
+# オプションのバリデーションもするか？
+opt.on("-m MONTH") { |v| month_option = v.to_i }
+opt.on("-y YEAR") { |v| year_option = v.to_i }
+opt.parse!(ARGV)
+
+target_date = Date.new(year_option || today.year, month_option || today.month, 1)
+date_range = beginning_of_month(target_date)..end_of_month(target_date)
+
+puts "#{target_date.month}月 #{target_date.year}".center(calendar_width)
 puts "日 月 火 水 木 金 土"
 
 date_range.each.with_index(1) do |date, index|
