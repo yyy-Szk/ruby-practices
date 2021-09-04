@@ -9,4 +9,3 @@
 
   puts output
 end
-
