@@ -4,6 +4,12 @@
 require 'date'
 require 'optparse'
 
+class String
+  def invert_color
+    "\e[7m#{self}\e[0m"
+  end
+end
+
 def beginning_of_month(date)
   Date.new(date.year, date.month, 1)
 end
@@ -41,7 +47,8 @@ puts '日 月 火 水 木 金 土'
 date_range.each.with_index(1) do |date, index|
   print ' ' * (3 * date.wday) if index == 1
 
-  print date.day.to_s.rjust(2)
+  day = date.day.to_s.rjust(2)
+  print date == today ? day.invert_color : day
   print ' ' # 日付間の空白
 
   puts if date.saturday?
