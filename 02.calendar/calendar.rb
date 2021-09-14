@@ -10,20 +10,14 @@ class String
   end
 end
 
-def beginning_of_month(date)
-  Date.new(date.year, date.month, 1)
-end
-
-def end_of_month(date)
-  if date.month == 12
-    year = date.year + 1
-    next_month = 1
-  else
-    year = date.year
-    next_month = date.month + 1
+class Date
+  def beginning_of_month
+    self.class.new(year, month)
   end
 
-  beginning_of_month(Date.new(year, next_month)) - 1
+  def end_of_month
+    self.class.new(year, month, -1)
+  end
 end
 
 today = Date.today
@@ -38,7 +32,7 @@ opt.on('-y YEAR') { |v| year_option = v.to_i }
 opt.parse!(ARGV)
 
 target_date = Date.new(year_option || today.year, month_option || today.month)
-date_range = beginning_of_month(target_date)..end_of_month(target_date)
+date_range = target_date.beginning_of_month..target_date.end_of_month
 
 # 出力担当
 puts "#{target_date.month}月 #{target_date.year}".center(calendar_width)
