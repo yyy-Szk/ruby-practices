@@ -43,10 +43,10 @@ date_range = beginning_of_month(target_date)..end_of_month(target_date)
 # 出力担当
 puts "#{target_date.month}月 #{target_date.year}".center(calendar_width)
 puts '日 月 火 水 木 金 土'
+# 月初の曜日調整
+print ' ' * (3 * date_range.first.wday)
 
 date_range.each.with_index(1) do |date, index|
-  print ' ' * (3 * date.wday) if index == 1
-
   day = date.day.to_s.rjust(2)
   print date == today ? day.invert_color : day
   print ' ' # 日付間の空白
