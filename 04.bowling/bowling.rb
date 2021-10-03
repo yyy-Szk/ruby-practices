@@ -11,8 +11,20 @@ if result.nil?
  end
 
 score = 0
-result.split(',').each do |data|
-  score += data.to_i
+is_spare = false
+result.split(',').each_slice(2).with_index(1) do |data, index|
+  flame_score = data.sum(&:to_i)
+
+  # 前回の記録がspareの場合、一投目の点数を加算
+  # (ラストフレームを除く > ラストは投球数が増える)
+  score += data[0].to_i if is_spare && index != 10
+  score += flame_score
+
+  p '=========='
+  p score
+  p '=========='
+
+  is_spare = flame_score == 10 ? true : false
 end
 
 puts score
