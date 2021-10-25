@@ -1,15 +1,83 @@
 #! /usr/bin/env ruby
 # frozen_string_literal: true
 
-def split_flame(data)
-  data.split(',').each_with_object([]) do |v, array|
-    case v
-    # ストライクの場合,一投目のスコアを10、二投目のスコアを0とする
-    when 'X' then array.push(10, 0)
-    else array.push(v.to_i)
+class BowlingScoreCalculator
+  attr_accessor :game_data
+  attr_reader :total_score
+
+  def initialize(game_data)
+    @game_data = game_data
+  end
+
+  def calculate
+    # total_score は 計算するまで nil にしたいのでここで入れる
+    @total_score = 0
+    is_spare, is_strike, is_double_strike = false, false, false
+
+    split_by_frame.each.with_index(1) do |data, frame_count|
+      is_last_frame = frame_count > 10
+      first_throw, second_throw = data
+      frame_score = data.sum # 最終フレームは投球数が変動するので、その考慮で sum にて算出
+
+      bonus_score = calculate_bonus_score(
+        first_throw: first_throw,
+        second_throw: second_throw,
+        is_spare: is_spare,
+        is_strike: is_strike,
+        is_double_strike: is_double_strike,
+        is_last_frame: is_last_frame
+      )
+
+      if first_throw == 10
+        is_double_strike = is_strike ? true : false
+        is_strike = true
+        is_spare = false
+      elsif frame_score == 10
+        is_spare = true
+        is_double_strike = false
+        is_strike = false
+      else
+        is_spare = false
+        is_double_strike = false
+        is_strike = false
+      end
+
+      if is_last_frame
+        is_spare = false
+        is_double_strike = false
+        is_strike = false
+      end
+
+      @total_score += (frame_score + bonus_score)
     end
-  end.each_slice(2).to_a
+  end
+
+ private
+
+  def calculate_bonus_score(first_throw:, second_throw:, is_strike:, is_double_strike:, is_spare:, is_last_frame:)
+    score = 0
+    # ラストフレームは、基本的に投球数が増えるだけ。
+    # ただし、二連続ストライクのみラストフレームに加算を行う可能性がある。
+    unless is_last_frame
+      score += (first_throw + second_throw) if is_strike
+      score += first_throw if is_spare
+    end
+    score += first_throw if is_double_strike
+
+    score
+  end
+
+  def split_by_frame
+    strike = "X"
+    game_data.split(',').each_with_object([]) do |v, array|
+      case v
+      when strike then array.push(10, 0)
+      else array.push(v.to_i)
+      end
+    end.each_slice(2).to_a
+  end
 end
+
 
 # 結果は第一引数に渡される
 game_data = ARGV[0]
@@ -18,48 +86,9 @@ game_data = ARGV[0]
 if game_data.nil? 
   puts "第一引数に結果を渡してください。"
   return
- end
-
-p split_flame(game_data)
-score = 0
-is_strike = false
-is_second_strike = false
-is_spare = false
-split_flame(game_data).each.with_index(1) do |data, index|
-  first_throw, second_throw = data
-  flame_score = data.sum
-
-  # 二連続ストライクのみ、ラストフレーム以降に加算を行う可能性があるため外に出す
-  score += first_throw if is_second_strike
-  # ラストフレーム以降は、投球数が増えるだけで特別な処理はいらない = 9 投目の時点で全てのフラグをfalseにする
-  unless index > 10
-  # 前回の記録がspare/strikeかつ今回もstrikeの場合、一投目の点数を加算 / strikeの場合、フレーム全体の点数を加算
-    score += first_throw if is_spare
-    score += flame_score if is_strike
-    # なんかメソッドにしたい
-    if first_throw == 10
-      is_second_strike = is_strike ? true : false
-      is_strike = true
-      is_spare = false
-    elsif flame_score == 10
-      is_spare = true
-      is_second_strike = false
-      is_strike = false
-     else
-      is_spare = false
-      is_second_strike = false
-      is_strike = false
-    end
-  else
-    is_spare = false
-    is_second_strike = false
-    is_strike = false
-  end
-
-  score += flame_score
-  # binding.irb
-  # p 'score', score
 end
 
-puts score
+bowling_score_calculator = BowlingScoreCalculator.new(game_data)
+bowling_score_calculator.calculate
 
+puts bowling_score_calculator.total_score
