@@ -12,12 +12,14 @@ class BowlingScoreCalculator
   def calculate
     # total_score は 計算するまで nil にしたいのでここで入れる
     @total_score = 0
-    is_spare, is_strike, is_double_strike = false, false, false
+    is_spare = false
+    is_strike = false
+    is_double_strike = false
 
     game_data_splitted_by_frame.each.with_index(1) do |data, frame_count|
       # 通常は1フレームにつき2投
       first_throw, second_throw = data
-      frame_score = data.sum 
+      frame_score = data.sum
       bonus_score = calculate_bonus_score(
         first_throw: first_throw,
         second_throw: second_throw,
@@ -25,17 +27,23 @@ class BowlingScoreCalculator
         is_strike: is_strike,
         is_double_strike: is_double_strike
       )
-      is_spare, is_strike, is_double_strike = check_bonus_flags(first_throw: first_throw, second_throw: second_throw, is_strike: is_strike, frame_count: frame_count)
+      is_spare, is_strike, is_double_strike = check_bonus_flags(
+        first_throw: first_throw,
+        second_throw: second_throw,
+        is_strike: is_strike,
+        frame_count: frame_count
+      )
 
       @total_score += (frame_score + bonus_score)
     end
   end
 
- private
+  private
+
   def check_bonus_flags(first_throw:, second_throw:, is_strike:, frame_count:)
     # 最終フレーム直前の場合処理が変わる
     if frame_count > 9
-      is_double_strike = (first_throw == 10 && is_strike) ? true : false
+      is_double_strike = first_throw == 10 && is_strike ? true : false
       is_spare = false
       is_strike = false
 
@@ -69,7 +77,7 @@ class BowlingScoreCalculator
   end
 
   def game_data_splitted_by_frame
-    strike = "X"
+    strike = 'X'
     game_data.split(',').each_with_object([]) do |v, array|
       case v
       when strike then array.push(10, 0)
@@ -83,8 +91,8 @@ end
 game_data = ARGV[0]
 
 # 入力忘れ用
-if game_data.nil? 
-  puts "第一引数に結果を渡してください。"
+if game_data.nil?
+  puts '第一引数に結果を渡してください。'
   return
 end
 
