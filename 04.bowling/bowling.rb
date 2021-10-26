@@ -20,19 +20,10 @@ class BowlingScoreCalculator
       # 通常は1フレームにつき2投
       first_throw, second_throw = data
       frame_score = data.sum
-      bonus_score = calculate_bonus_score(
-        first_throw: first_throw,
-        second_throw: second_throw,
-        is_spare: is_spare,
-        is_strike: is_strike,
-        is_double_strike: is_double_strike
-      )
-      is_spare, is_strike, is_double_strike = check_bonus_flags(
-        first_throw: first_throw,
-        second_throw: second_throw,
-        is_strike: is_strike,
-        frame_count: frame_count
-      )
+      bonus_score = calculate_bonus_score(first_throw: first_throw, second_throw: second_throw,
+                                          is_spare: is_spare, is_strike: is_strike, is_double_strike: is_double_strike)
+      is_spare, is_strike, is_double_strike = check_bonus_flags(first_throw: first_throw, second_throw: second_throw,
+                                                                is_strike: is_strike, frame_count: frame_count)
 
       @total_score += (frame_score + bonus_score)
     end
