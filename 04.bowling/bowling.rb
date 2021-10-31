@@ -12,13 +12,12 @@ class BowlingScoreCalculator
   def calculate
     # total_score は 計算するまで nil にしたいのでここで入れる
     @total_score = 0
-    is_spare = false
-    is_strike = false
-    is_double_strike = false
+    bonus_type = nil
 
     game_data_splitted_by_frame.each.with_index(1) do |frame_scores, frame_count|
-      bonus_score = calculate_bonus_score(frame_scores, is_strike, is_double_strike, is_spare)
-      is_spare, is_strike, is_double_strike = check_bonus_flags(frame_scores, is_strike, frame_count)
+      bonus_score = calculate_bonus_score(frame_scores, bonus_type, frame_count)
+      # 次のフレームに適用するボーナスタイプを算出
+      bonus_type = check_next_frame_bonus_type(frame_scores, bonus_type)
 
       @total_score += (frame_scores.sum + bonus_score)
     end
@@ -26,42 +25,32 @@ class BowlingScoreCalculator
 
   private
 
-  def check_bonus_flags(frame_scores, is_strike, frame_count)
-    first_throw, second_throw = frame_scores
-    # 最終フレーム直前の場合処理が変わる
-    if frame_count > 9
-      is_double_strike = first_throw == 10 && is_strike ? true : false
-      is_spare = false
-      is_strike = false
-
-      return [is_spare, is_strike, is_double_strike]
+  def check_next_frame_bonus_type(frame_scores, bonus_type)
+    if frame_scores.first == 10
+      case bonus_type
+      when :strike, :double_strike then :double_strike
+      else :strike
+      end
+    elsif frame_scores.sum == 10
+      :spare
     end
-
-    if first_throw == 10
-      is_double_strike = is_strike ? true : false
-      is_strike = true
-      is_spare = false
-    elsif (first_throw + second_throw) == 10
-      is_spare = true
-      is_double_strike = false
-      is_strike = false
-    else
-      is_spare = false
-      is_double_strike = false
-      is_strike = false
-    end
-
-    [is_spare, is_strike, is_double_strike]
   end
 
-  def calculate_bonus_score(frame_scores, is_strike, is_double_strike, is_spare)
-    score = 0
-    first_throw, second_throw = frame_scores
-    score += (first_throw + second_throw) if is_strike
-    score += first_throw if is_spare
-    score += first_throw if is_double_strike
+  def calculate_bonus_score(frame_scores, bonus_type, frame_count)
+    first_throw = frame_scores.first
 
-    score
+    case bonus_type
+    when :spare then first_throw
+    when :strike then frame_scores.sum
+    when :double_strike
+      # 最終フレーム直前の場合処理が変わる
+      if frame_count > 9
+        first_throw
+      else
+        first_throw + frame_scores.sum
+      end
+    else 0
+    end
   end
 
   def game_data_splitted_by_frame
