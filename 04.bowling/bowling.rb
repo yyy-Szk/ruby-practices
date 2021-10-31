@@ -16,20 +16,18 @@ class BowlingScoreCalculator
     is_strike = false
     is_double_strike = false
 
-    game_data_splitted_by_frame.each.with_index(1) do |data, frame_count|
-      # 通常は1フレームにつき2投
-      first_throw, second_throw = data
-      frame_score = data.sum
-      bonus_score = calculate_bonus_score(first_throw, second_throw, is_strike, is_double_strike, is_spare)
-      is_spare, is_strike, is_double_strike = check_bonus_flags(first_throw, second_throw, is_strike, frame_count)
+    game_data_splitted_by_frame.each.with_index(1) do |frame_scores, frame_count|
+      bonus_score = calculate_bonus_score(frame_scores, is_strike, is_double_strike, is_spare)
+      is_spare, is_strike, is_double_strike = check_bonus_flags(frame_scores, is_strike, frame_count)
 
-      @total_score += (frame_score + bonus_score)
+      @total_score += (frame_scores.sum + bonus_score)
     end
   end
 
   private
 
-  def check_bonus_flags(first_throw, second_throw, is_strike, frame_count)
+  def check_bonus_flags(frame_scores, is_strike, frame_count)
+    first_throw, second_throw = frame_scores
     # 最終フレーム直前の場合処理が変わる
     if frame_count > 9
       is_double_strike = first_throw == 10 && is_strike ? true : false
@@ -56,8 +54,9 @@ class BowlingScoreCalculator
     [is_spare, is_strike, is_double_strike]
   end
 
-  def calculate_bonus_score(first_throw, second_throw, is_strike, is_double_strike, is_spare)
+  def calculate_bonus_score(frame_scores, is_strike, is_double_strike, is_spare)
     score = 0
+    first_throw, second_throw = frame_scores
     score += (first_throw + second_throw) if is_strike
     score += first_throw if is_spare
     score += first_throw if is_double_strike
