@@ -4,7 +4,6 @@
 class BowlingScoreCalculator
   attr_accessor :game_data
   attr_reader :total_score
-  STRIKE = 'X'.freeze
 
   def initialize(game_data)
     @game_data = game_data
@@ -15,7 +14,7 @@ class BowlingScoreCalculator
     @total_score = 0
     bonus_type = nil
 
-    game_data_splitted_by_frame.each.with_index(1) do |frame_scores, frame_count|
+    game_data_divided_by_frame.each.with_index(1) do |frame_scores, frame_count|
       bonus_score = calculate_bonus_score(frame_scores, bonus_type, frame_count)
       # 次のフレームに適用するボーナスタイプを算出
       bonus_type = check_next_frame_bonus_type(frame_scores, bonus_type)
@@ -37,7 +36,7 @@ class BowlingScoreCalculator
     end
   end
 
-  def calculate_bonus_score(frame_scores, bonus_type, frame_count)
+  def calculate_bonus_score(frame_scores, bonus_type, _frame_count)
     first_throw, second_throw = frame_scores
     case bonus_type
     when :spare then first_throw
@@ -47,28 +46,28 @@ class BowlingScoreCalculator
     end
   end
 
-  def game_data_splitted_by_frame
+  def game_data_divided_by_frame
+    strike = 'X'
+
     # 2投ごとに分ける（この時点ではフレーム数が10を超えている）
-    game_data_splitted_by_2 = game_data.split(',').each_with_object([]) do |v, array|
+    game_data_splitted_by_two = game_data.split(',').each_with_object([]) do |v, array|
       case v
-      when STRIKE then array.push(10, 0)
+      when strike then array.push(10, 0)
       else array.push(v.to_i)
       end
     end.each_slice(2).to_a
 
     # 最終フレームを最適化する（フレーム数が10になるように調整）
-    game_data_splitted_by_2.each_with_object([]) do |v, array|
-      if array.size >= 9
-        first_throw, second_throw = v
-
-        array << [] if array[9].nil?
-        array.last << first_throw
-        if second_throw && second_throw != 0
-          array.last << second_throw
-        end
-      else
+    game_data_splitted_by_two.each_with_object([]) do |v, array|
+      if array.size < 9
         array << v
+        next
       end
+
+      first_throw, second_throw = v
+      array << [] if array[9].nil?
+      array.last << first_throw
+      array.last << second_throw if second_throw && second_throw != 0
     end
   end
 end
