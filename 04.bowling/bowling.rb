@@ -4,6 +4,7 @@
 class BowlingScoreCalculator
   attr_accessor :game_data
   attr_reader :total_score
+  STRIKE = 'X'.freeze
 
   def initialize(game_data)
     @game_data = game_data
@@ -37,30 +38,38 @@ class BowlingScoreCalculator
   end
 
   def calculate_bonus_score(frame_scores, bonus_type, frame_count)
-    first_throw = frame_scores.first
-
+    first_throw, second_throw = frame_scores
     case bonus_type
     when :spare then first_throw
-    when :strike then frame_scores.sum
-    when :double_strike
-      # 最終フレーム直前の場合処理が変わる
-      if frame_count > 9
-        first_throw
-      else
-        first_throw + frame_scores.sum
-      end
+    when :strike then first_throw + second_throw
+    when :double_strike then first_throw * 2 + second_throw
     else 0
     end
   end
 
   def game_data_splitted_by_frame
-    strike = 'X'
-    game_data.split(',').each_with_object([]) do |v, array|
+    # 2投ごとに分ける（この時点ではフレーム数が10を超えている）
+    game_data_splitted_by_2 = game_data.split(',').each_with_object([]) do |v, array|
       case v
-      when strike then array.push(10, 0)
+      when STRIKE then array.push(10, 0)
       else array.push(v.to_i)
       end
     end.each_slice(2).to_a
+
+    # 最終フレームを最適化する（フレーム数が10になるように調整）
+    game_data_splitted_by_2.each_with_object([]) do |v, array|
+      if array.size >= 9
+        first_throw, second_throw = v
+
+        array << [] if array[9].nil?
+        array.last << first_throw
+        if second_throw && second_throw != 0
+          array.last << second_throw
+        end
+      else
+        array << v
+      end
+    end
   end
 end
 
