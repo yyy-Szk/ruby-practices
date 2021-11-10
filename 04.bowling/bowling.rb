@@ -2,11 +2,10 @@
 # frozen_string_literal: true
 
 class BowlingScoreCalculator
-  attr_accessor :game_data
-  attr_reader :total_score
+  attr_reader :total_score, :throws
 
-  def initialize(game_data)
-    @game_data = game_data
+  def initialize(throws)
+    @throws = throws
   end
 
   def calculate
@@ -50,7 +49,7 @@ class BowlingScoreCalculator
     strike = 'X'
 
     # 2投ごとに分ける（この時点ではフレーム数が10を超えている）
-    game_data_splitted_by_two = game_data.split(',').each_with_object([]) do |v, array|
+    game_data_splitted_by_two = throws.split(',').each_with_object([]) do |v, array|
       case v
       when strike then array.push(10, 0)
       else array.push(v.to_i)
@@ -73,15 +72,15 @@ class BowlingScoreCalculator
 end
 
 # 結果は第一引数に渡される
-game_data = ARGV[0]
+throws = ARGV[0]
 
 # 入力忘れ用
-if game_data.nil?
+if throws.nil?
   puts '第一引数に結果を渡してください。'
   return
 end
 
-bowling_score_calculator = BowlingScoreCalculator.new(game_data)
+bowling_score_calculator = BowlingScoreCalculator.new(throws)
 bowling_score_calculator.calculate
 
 puts bowling_score_calculator.total_score
