@@ -13,7 +13,7 @@ class BowlingScoreCalculator
     @total_score = 0
     bonus_type = nil
 
-    game_data_divided_by_frame.each.with_index(1) do |frame_scores, frame_count|
+    frames.each.with_index(1) do |frame_scores, frame_count|
       bonus_score = calculate_bonus_score(frame_scores, bonus_type, frame_count)
       # 次のフレームに適用するボーナスタイプを算出
       bonus_type = check_next_frame_bonus_type(frame_scores, bonus_type)
@@ -45,11 +45,11 @@ class BowlingScoreCalculator
     end
   end
 
-  def game_data_divided_by_frame
+  def frames
     strike = 'X'
 
     # 2投ごとに分ける（この時点ではフレーム数が10を超えている）
-    game_data_splitted_by_two = throws.split(',').each_with_object([]) do |v, array|
+    throws_by_splitted = throws.split(',').each_with_object([]) do |v, array|
       case v
       when strike then array.push(10, 0)
       else array.push(v.to_i)
@@ -57,7 +57,7 @@ class BowlingScoreCalculator
     end.each_slice(2).to_a
 
     # 最終フレームを最適化する（フレーム数が10になるように調整）
-    game_data_splitted_by_two.each_with_object([]) do |v, array|
+    throws_by_splitted.each_with_object([]) do |v, array|
       if array.size < 9
         array << v
         next
