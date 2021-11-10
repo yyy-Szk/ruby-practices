@@ -50,9 +50,10 @@ class BowlingScoreCalculator
 
     # 2投ごとに分ける（この時点ではフレーム数が10を超えている）
     throws_by_splitted = throws.split(',').each_with_object([]) do |v, array|
-      case v
-      when strike then array.push(10, 0)
-      else array.push(v.to_i)
+      if v == strike
+        array.push(10, 0)
+      else
+        array.push(v.to_i)
       end
     end.each_slice(2).to_a
 
