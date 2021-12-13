@@ -19,16 +19,44 @@ class BowlingScoreCalculator
     @total_score = 0
     bonus_type = nil
 
-    frames.each.with_index(1) do |frame_scores, frame_count|
-      bonus_score = calculate_bonus_score(frame_scores, bonus_type, frame_count)
-      # 次のフレームに適用するボーナスタイプを算出
-      bonus_type = check_next_frame_bonus_type(frame_scores, bonus_type)
-
+    frames.each.with_index(0) do |frame_scores, index|
+      bonus_score = calculate_bonus_score(frame_scores, bonus_type, index)
       @total_score += (frame_scores.sum + bonus_score)
     end
   end
 
   private
+
+  def next_frame_scores(index)
+    frames[index + 1]
+  end
+
+  def before_frame_scores(index)
+    frames[index - 1]
+  end
+
+  def calculate_bonus_score(frame_scores, bonus_type, index)
+    # 最初のフレームは、ボーナススコアが0
+    return 0 if index < 1
+
+    if before_frame_scores(index).first == 10
+      if frame_scores.first == 10 && index >= 9
+        # 最終フレームでの、ダブルストライクの場合
+        # => 最後のフレームは、ストライクの場合投球数が増える関係で、ストライクの時のボーナススコアの計算方法が異なる
+        frame_scores.first + frame_scores.second.to_i
+      elsif frame_scores.first == 10
+        # 2連続ストライクの場合
+        frame_scores.first + next_frame_scores(index).first
+      else
+        # 前回がストライクの場合（フレーム計算時に0をdeleteしているので、2投目以降がnilの可能性がある > to_iを入れて対策）
+        frame_scores.first + frame_scores.second.to_i
+      end
+    elsif before_frame_scores(index).sum == 10
+      frame_scores.first
+    else
+      0
+    end
+  end
 
   def check_next_frame_bonus_type(frame_scores, bonus_type)
     if frame_scores.first == 10
@@ -38,15 +66,6 @@ class BowlingScoreCalculator
       end
     elsif frame_scores.sum == 10
       :spare
-    end
-  end
-
-  def calculate_bonus_score(frame_scores, bonus_type, _frame_count)
-    case bonus_type
-    when :spare then frame_scores.first
-    when :strike then frame_scores.first + frame_scores.second.to_i # フレーム計算時に0をdeleteしているので、二投目以降がnilの可能性がある
-    when :double_strike then frame_scores.first * 2 + frame_scores.second.to_i
-    else 0
     end
   end
 
