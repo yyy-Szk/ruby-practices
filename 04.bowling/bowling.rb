@@ -42,11 +42,10 @@ class BowlingScoreCalculator
   end
 
   def calculate_bonus_score(frame_scores, bonus_type, _frame_count)
-    first_throw, second_throw = frame_scores
     case bonus_type
-    when :spare then first_throw
-    when :strike then first_throw + second_throw
-    when :double_strike then first_throw * 2 + second_throw
+    when :spare then frame_scores.first
+    when :strike then frame_scores.first + frame_scores.second.to_i # フレーム計算時に0をdeleteしているので、二投目以降がnilの可能性がある
+    when :double_strike then frame_scores.first * 2 + frame_scores.second.to_i
     else 0
     end
   end
