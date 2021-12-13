@@ -64,16 +64,16 @@ class BowlingScoreCalculator
     end.each_slice(2).to_a
 
     # 最終フレームを最適化する（フレーム数が10になるように調整）
-    throws_by_splitted.each_with_object([]) do |v, array|
-      if array.size < 9
-        array << v
+    throws_by_splitted.each_with_object([]) do |_throw, array|
+      if array.size < 10
+        # 最終フレームの一投目がストライクの場合を考慮
+        _throw.delete(0) if array.size >= 9
+        array << _throw
         next
       end
 
-      first_throw, second_throw = v
-      array << [] if array[9].nil?
-      array.last << first_throw
-      array.last << second_throw if second_throw && second_throw != 0
+      _throw.delete(0)
+      array.last.concat(_throw)
     end
   end
 end
