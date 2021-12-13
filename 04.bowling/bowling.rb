@@ -1,6 +1,12 @@
 #! /usr/bin/env ruby
 # frozen_string_literal: true
 
+class Array
+  def second
+    self[1]
+  end
+end
+
 class BowlingScoreCalculator
   attr_reader :total_score, :throws
 
