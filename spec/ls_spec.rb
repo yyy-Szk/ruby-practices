@@ -25,4 +25,3 @@ RSpec.describe ListSegments do
     end
   end
 end
-

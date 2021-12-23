@@ -30,16 +30,27 @@ class ListSegments
     exist_files.reject { |filename| filename.start_with?('.') }
   end
 
-  # 行一覧
+  Column = Struct.new(:rows) do
+    def row(index)
+      rows[index].to_s.ljust(row_size)
+    end
+
+    def row_size
+      rows.max_by(&:size).size
+    end
+  end
+
   def columns
-    @columns ||=
-      target_files.each_with_object([]) { |filename, array|
+    @columns ||= lambda {
+      files_split_by_max_column_size = target_files.each_with_object([]) do |filename, array|
         if array.last.nil? || array.last.size >= max_row_size
           array << [filename]
         else
           array.last << filename
         end
-      }.map { |rows| Column.new(rows) }
+      end
+      files_split_by_max_column_size.map { |rows| Column.new(rows) }
+    }.call
   end
 
   def max_column_size
@@ -52,18 +63,7 @@ class ListSegments
 
     max_size
   end
-
-  class Column < Struct.new(:rows)
-    def row(index)
-      "#{rows[index]}".ljust(row_size)
-    end
-
-    def row_size
-      rows.max_by { |row| row.size }.size
-    end
-  end
 end
-
 
 path = ARGV[0] || '.'
 ListSegments.call(path)
