@@ -2,10 +2,10 @@
 # frozen_string_literal: true
 
 class ListSegments
-  attr_reader :path
+  attr_reader :file_list
 
   def initialize(path)
-    @path = path
+    @file_list = Dir.foreach(path).sort.to_a
   end
 
   def self.call(path = '.')
@@ -13,15 +13,32 @@ class ListSegments
   end
 
   def call
-    Dir.foreach(path) do |file_name|
-      # optionは未実装なので、隠しファイルは表示しない
+    # optionは未実装なので、とりあえず隠しファイルは表示しない
+    puts file_list_without_secret_file
+  end
 
-      next if file_name.start_with?('.')
+  private
 
-      print file_name, (' ' * 6)
+  def file_list_without_secret_file
+    file_list.reject { |filename| filename.start_with?('.') }
+  end
+
+  def max_colums
+    3
+  end
+
+  def max_rows
+    max_size = file_list.size / 3
+    max_size + 1 unless (file_list.size % 3).zero?
+  end
+
+
+  class Column < Struct.new(:rows)
+    def longest_filename_length
     end
   end
 end
+
 
 path = ARGV[0] || '.'
 ListSegments.call(path)
