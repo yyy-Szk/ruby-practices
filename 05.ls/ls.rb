@@ -2,10 +2,11 @@
 # frozen_string_literal: true
 
 class ListSegments
-  attr_reader :file_list
+  attr_reader :target_files
 
   def initialize(path)
-    @file_list = Dir.foreach(path).sort.to_a
+    # オプションは未実装なので、隠しファイルは削除する
+    @target_files = remove_secret_file(Dir.foreach(path).sort.to_a)
   end
 
   def self.call(path = '.')
@@ -13,28 +14,52 @@ class ListSegments
   end
 
   def call
-    # optionは未実装なので、とりあえず隠しファイルは表示しない
-    puts file_list_without_secret_file
+    max_row_size.times do |i|
+      row_content = columns.map { |column| column.row(i) }.join(blank_after_filename).strip
+      puts row_content
+    end
   end
 
   private
 
-  def file_list_without_secret_file
-    file_list.reject { |filename| filename.start_with?('.') }
+  def blank_after_filename
+    "\s\s\s"
   end
 
-  def max_colums
+  def remove_secret_file(exist_files)
+    exist_files.reject { |filename| filename.start_with?('.') }
+  end
+
+  # 行一覧
+  def columns
+    @columns ||=
+      target_files.each_with_object([]) { |filename, array|
+        if array.last.nil? || array.last.size >= max_row_size
+          array << [filename]
+        else
+          array.last << filename
+        end
+      }.map { |rows| Column.new(rows) }
+  end
+
+  def max_column_size
     3
   end
 
-  def max_rows
-    max_size = file_list.size / 3
-    max_size + 1 unless (file_list.size % 3).zero?
+  def max_row_size
+    max_size = target_files.size / max_column_size
+    max_size += 1 unless (target_files.size % max_column_size).zero?
+
+    max_size
   end
 
-
   class Column < Struct.new(:rows)
-    def longest_filename_length
+    def row(index)
+      "#{rows[index]}".ljust(row_size)
+    end
+
+    def row_size
+      rows.max_by { |row| row.size }.size
     end
   end
 end
