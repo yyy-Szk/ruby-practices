@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 # frozen_string_literal: true
 
-class ListSegments
+class LS
   attr_reader :target_files
 
   def initialize(path)
@@ -66,4 +66,4 @@ class ListSegments
 end
 
 path = ARGV[0] || '.'
-ListSegments.call(path)
+LS.call(path)

@@ -2,7 +2,7 @@
 
 require_relative '../05.ls/ls'
 
-RSpec.describe ListSegments do
+RSpec.describe LS do
   describe 'self.call' do
     # ruby-practicesディレクトリから実行されることを想定
     example '動作の検証' do
