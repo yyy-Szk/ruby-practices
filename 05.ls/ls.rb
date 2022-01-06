@@ -4,6 +4,9 @@
 class LS
   attr_reader :target_files
 
+  MAX_COLUMN_SIZE = 3
+  BLANK_AFTER_FILENAME = "\s" * 3
+
   def initialize(path)
     # オプションは未実装なので、隠しファイルは削除する
     @target_files = remove_secret_file(Dir.foreach(path).sort.to_a)
@@ -15,16 +18,12 @@ class LS
 
   def call
     max_row_size.times do |i|
-      row_content = columns.map { |column| column.row(i) }.join(blank_after_filename).strip
+      row_content = columns.map { |column| column.row(i) }.join(BLANK_AFTER_FILENAME).strip
       puts row_content
     end
   end
 
   private
-
-  def blank_after_filename
-    "\s\s\s"
-  end
 
   def remove_secret_file(exist_files)
     exist_files.reject { |filename| filename.start_with?('.') }
@@ -53,13 +52,9 @@ class LS
     }.call
   end
 
-  def max_column_size
-    3
-  end
-
   def max_row_size
-    max_size = target_files.size / max_column_size
-    max_size += 1 unless (target_files.size % max_column_size).zero?
+    max_size = target_files.size / MAX_COLUMN_SIZE
+    max_size += 1 unless (target_files.size % MAX_COLUMN_SIZE).zero?
 
     max_size
   end
