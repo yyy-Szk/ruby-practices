@@ -20,7 +20,10 @@ class LS
 
   def call
     max_row_size.times do |i|
-      row_content = columns.map { |column| column.row(i) }.join(BLANK_AFTER_FILENAME).strip
+      row_content = columns
+                    .map { |column| column.row(i) }
+                    .join(BLANK_AFTER_FILENAME)
+                    .strip
       puts row_content
     end
   end
@@ -33,7 +36,7 @@ class LS
     end
 
     def row_size
-      rows.max_by(&:size).size
+      @row_size ||= rows.max_by(&:size).size
     end
   end
 
