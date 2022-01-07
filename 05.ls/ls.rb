@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 class LS
-  attr_reader :target_files
+  attr_reader :target_files, :max_row_size, :columns
 
   MAX_COLUMN_SIZE = 3
   BLANK_AFTER_FILENAME = "\s" * 3
@@ -10,6 +10,8 @@ class LS
   def initialize(path)
     # オプションは未実装なので、隠しファイルは削除する
     @target_files = Dir.glob('*', base: path).sort
+    @max_row_size = calculate_max_row_size
+    @columns = build_columns
   end
 
   def self.call(path = '.')
@@ -35,24 +37,20 @@ class LS
     end
   end
 
-  def columns
-    @columns ||= lambda {
-      files_split_by_max_column_size = target_files.each_with_object([]) do |filename, array|
-        if array.last.nil? || array.last.size >= max_row_size
-          array << [filename]
-        else
-          array.last << filename
-        end
+  def build_columns
+    files_split_by_max_column_size = target_files.each_with_object([]) do |filename, array|
+      if array.last.nil? || array.last.size >= max_row_size
+        array << [filename]
+      else
+        array.last << filename
       end
-      files_split_by_max_column_size.map { |rows| Column.new(rows) }
-    }.call
+    end
+
+    files_split_by_max_column_size.map { |rows| Column.new(rows) }
   end
 
-  def max_row_size
-    max_size = target_files.size / MAX_COLUMN_SIZE
-    max_size += 1 unless (target_files.size % MAX_COLUMN_SIZE).zero?
-
-    max_size
+  def calculate_max_row_size
+    (target_files.size.to_f / MAX_COLUMN_SIZE).ceil
   end
 end
 
