@@ -9,7 +9,7 @@ class LS
 
   def initialize(path)
     # オプションは未実装なので、隠しファイルは削除する
-    @target_files = remove_secret_file(Dir.foreach(path).sort.to_a)
+    @target_files = Dir.glob('*', base: path).sort
   end
 
   def self.call(path = '.')
@@ -24,10 +24,6 @@ class LS
   end
 
   private
-
-  def remove_secret_file(exist_files)
-    exist_files.reject { |filename| filename.start_with?('.') }
-  end
 
   Column = Struct.new(:rows) do
     def row(index)
