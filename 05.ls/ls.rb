@@ -8,7 +8,6 @@ class LS
   BLANK_AFTER_FILENAME = "\s" * 3
 
   def initialize(path)
-    # オプションは未実装なので、隠しファイルは削除する
     @target_files = Dir.glob('*', base: path).sort
     @max_row_size = calculate_max_row_size
     @columns = build_columns
