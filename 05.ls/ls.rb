@@ -2,8 +2,6 @@
 # frozen_string_literal: true
 
 class LS
-  attr_reader :target_files, :max_row_size, :columns
-
   MAX_COLUMN_SIZE = 3
   BLANK_AFTER_FILENAME = "\s" * 3
 
@@ -12,46 +10,50 @@ class LS
   end
 
   def initialize(path)
-    @target_files = Dir.glob('*', base: path).sort
-    @max_row_size = calculate_max_row_size
-    @columns = build_columns
+    @path = path
   end
 
   def output
+    target_files = Dir.glob('*', base: @path).sort
+    max_row_size = calculate_max_row_size(target_files)
+    columns = build_columns(target_files, max_row_size)
+
     max_row_size.times do |i|
-      row_content = columns
-                    .map { |column| column.row(i) }
-                    .join(BLANK_AFTER_FILENAME)
-                    .strip
+      row_content =
+        columns
+        .map { |column| column.file_name(i) }
+        .join(BLANK_AFTER_FILENAME)
+        .strip
       puts row_content
     end
   end
 
   private
 
-  Column = Struct.new(:rows) do
-    def row(index)
-      rows[index].to_s.ljust(row_size)
+  Column = Struct.new(:file_names) do
+    def file_name(index)
+      file_names[index].to_s.ljust(column_length)
     end
 
-    def row_size
-      @row_size ||= rows.max_by(&:size).size
+    def column_length
+      @column_length ||= file_names.max_by(&:size).size
     end
   end
 
-  def build_columns
-    files_split_by_max_column_size = target_files.each_with_object([]) do |filename, array|
-      if array.last.nil? || array.last.size >= max_row_size
-        array << [filename]
+  def build_columns(target_files, max_row_size)
+    nested_filenames = []
+    target_files.each do |filename|
+      if nested_filenames.last.nil? || nested_filenames.last.size >= max_row_size
+        nested_filenames << [filename]
       else
-        array.last << filename
+        nested_filenames.last << filename
       end
     end
 
-    files_split_by_max_column_size.map { |rows| Column.new(rows) }
+    nested_filenames.map { |filenames| Column.new(filenames) }
   end
 
-  def calculate_max_row_size
+  def calculate_max_row_size(target_files)
     (target_files.size.to_f / MAX_COLUMN_SIZE).ceil
   end
 end
