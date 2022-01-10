@@ -7,17 +7,17 @@ class LS
   MAX_COLUMN_SIZE = 3
   BLANK_AFTER_FILENAME = "\s" * 3
 
+  def self.output(path = '.')
+    new(path).output
+  end
+
   def initialize(path)
     @target_files = Dir.glob('*', base: path).sort
     @max_row_size = calculate_max_row_size
     @columns = build_columns
   end
 
-  def self.call(path = '.')
-    new(path).call
-  end
-
-  def call
+  def output
     max_row_size.times do |i|
       row_content = columns
                     .map { |column| column.row(i) }
@@ -57,4 +57,4 @@ class LS
 end
 
 path = ARGV[0] || '.'
-LS.call(path)
+LS.output(path)
