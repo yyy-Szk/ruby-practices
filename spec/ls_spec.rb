@@ -23,5 +23,18 @@ RSpec.describe LS do
         FILE_LIST
       end
     end
+
+    context '-aオプションを渡した場合' do
+      example 'コマンドを実行したディレクトリ内のファイル一覧 が、隠しファイルを含め表示される' do
+        expect { LS.output(options: ['-a']) }.to(output(<<~FILE_LIST).to_stdout)
+          .            .rubocop.yml   06.wc
+          ..           01.fizzbuzz    07.bowling_object
+          .DS_Store    02.calendar    08.ls_object
+          .git         03.rake        09.wc_object
+          .gitignore   04.bowling     README.md
+          .rspec       05.ls          spec
+        FILE_LIST
+      end
+    end
   end
 end
