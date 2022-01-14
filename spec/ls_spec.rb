@@ -26,7 +26,7 @@ RSpec.describe LS do
 
     context '-aオプションを渡した場合' do
       example 'コマンドを実行したディレクトリ内のファイル一覧 が、隠しファイルを含め表示される' do
-        expect { LS.output(options: ['-a']) }.to(output(<<~FILE_LIST).to_stdout)
+        expect { LS.output('.', ['-a']) }.to(output(<<~FILE_LIST).to_stdout)
           .            .rubocop.yml   06.wc
           ..           01.fizzbuzz    07.bowling_object
           .DS_Store    02.calendar    08.ls_object
