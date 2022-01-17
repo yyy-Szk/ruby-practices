@@ -3,12 +3,6 @@
 
 require 'optparse'
 
-class Array
-  def present?
-    !(nil? || empty?)
-  end
-end
-
 class LS
   MAX_COLUMN_SIZE = 3
   BLANK_AFTER_FILENAME = "\s" * 3
