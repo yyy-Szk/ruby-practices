@@ -1,3 +1,11 @@
 inherit_gem:
   rubocop-fjord:
     - "config/rubocop.yml"
+# rubocop-fjordでは、以下を含んだものをリリースしていないので独自で追加
+Metrics/ClassLength:
+  Exclude:
+    - test/**/*
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*
