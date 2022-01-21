@@ -47,9 +47,8 @@ class LS
     glob_args = ['*']
     glob_args << File::FNM_DOTMATCH if @options[:all]
     target_files = Dir.glob(*glob_args, base: path).sort
-    target_files = target_files.reverse if @options[:reverse]
 
-    target_files
+    @options[:reverse] ? target_files.reverse : target_files
   end
 
   Column = Struct.new(:file_names) do
