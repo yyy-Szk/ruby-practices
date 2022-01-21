@@ -51,5 +51,29 @@ RSpec.describe LS do
         FILE_LIST
       end
     end
+
+    context 'reverseオプションを渡した場合' do
+      example 'コマンドを実行したディレクトリ内のファイル一覧 が、降順で表示される' do
+        expect { LS.output(['.'], { reverse: true }) }.to(output(<<~FILE_LIST).to_stdout)
+          spec           07.bowling_object   03.rake
+          README.md      06.wc               02.calendar
+          09.wc_object   05.ls               01.fizzbuzz
+          08.ls_object   04.bowling
+        FILE_LIST
+      end
+    end
+
+    context '全てのオプションを渡した場合' do
+      example 'コマンドを実行したディレクトリ内のファイル一覧 が、隠しファイルを含め、降順で表示される' do
+        expect { LS.output(['.'], { all: true, reverse: true }) }.to(output(<<~FILE_LIST).to_stdout)
+          spec                05.ls          .rspec
+          README.md           04.bowling     .gitignore
+          09.wc_object        03.rake        .git
+          08.ls_object        02.calendar    .DS_Store
+          07.bowling_object   01.fizzbuzz    ..
+          06.wc               .rubocop.yml   .
+        FILE_LIST
+      end
+    end
   end
 end

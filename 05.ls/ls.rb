@@ -46,8 +46,9 @@ class LS
   def fetch_target_files(path)
     glob_args = ['*']
     glob_args << File::FNM_DOTMATCH if @options[:all]
+    target_files = Dir.glob(*glob_args, base: path).sort
 
-    Dir.glob(*glob_args, base: path).sort
+    @options[:reverse] ? target_files.reverse : target_files
   end
 
   Column = Struct.new(:file_names) do
@@ -81,6 +82,7 @@ end
 options = {}
 cmd_line_options = OptionParser.new
 cmd_line_options.on('-a', '--all') { options[:all] = true }
+cmd_line_options.on('-r', '--reverse') { options[:reverse] = true }
 
 paths = cmd_line_options.parse(ARGV)
 paths = ['.'] if paths.empty?
