@@ -3,6 +3,21 @@
 
 require 'optparse'
 
+class Array
+  def split(size)
+    nested_array = []
+    self.each do |value|
+      if nested_array.last.nil? || nested_array.last.size >= size
+        nested_array << [value]
+      else
+        nested_array.last << value
+      end
+    end
+
+    nested_array
+  end
+end
+
 class LS
   MAX_COLUMN_SIZE = 3
   BLANK_AFTER_FILENAME = "\s" * 3
@@ -31,7 +46,10 @@ class LS
   def output_file_list(path)
     target_files = fetch_target_files(path)
     max_row_size = calculate_max_row_size(target_files)
-    columns = build_columns(target_files, max_row_size)
+    columns =
+      target_files
+      .split(max_row_size)
+      .map { |splitted_files| build_column(splitted_files) }
 
     max_row_size.times do |i|
       row_content =
@@ -61,17 +79,8 @@ class LS
     end
   end
 
-  def build_columns(target_files, max_row_size)
-    nested_filenames = []
-    target_files.each do |filename|
-      if nested_filenames.last.nil? || nested_filenames.last.size >= max_row_size
-        nested_filenames << [filename]
-      else
-        nested_filenames.last << filename
-      end
-    end
-
-    nested_filenames.map { |filenames| Column.new(filenames) }
+  def build_column(filenames)
+    Column.new(filenames)
   end
 
   def calculate_max_row_size(target_files)
