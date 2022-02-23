@@ -35,16 +35,21 @@ class LS
     is_multiple_paths = @paths.size > 1
 
     @paths.each.with_index(1) do |path, index|
+      target_files = fetch_target_files(path)
+
       puts "#{path}:" if is_multiple_paths
-      output_file_list(path)
+      if @options[:list]
+        output_file_list_with_detail(path, target_files)
+      else
+        output_file_list(target_files)
+      end
       puts if is_multiple_paths && index != @paths.size
     end
   end
 
   private
 
-  def output_file_list(path)
-    target_files = fetch_target_files(path)
+  def output_file_list(target_files)
     max_row_size = calculate_max_row_size(target_files)
     columns =
       target_files
@@ -59,6 +64,9 @@ class LS
         .strip
       puts row_content
     end
+  end
+
+  def output_file_list_with_detail(path, target_files)
   end
 
   def fetch_target_files(path)
@@ -90,17 +98,21 @@ class LS
     Column.new(contents, align)
   end
 
-  def calculate_max_row_size(target_files)
-    (target_files.size.to_f / MAX_COLUMN_SIZE).ceil
+  def calculate_max_row_size(target_files, max_column_size = MAX_COLUMN_SIZE)
+    (target_files.size.to_f / max_column_size).ceil
   end
 end
 
-options = {}
-cmd_line_options = OptionParser.new
-cmd_line_options.on('-a', '--all') { options[:all] = true }
-cmd_line_options.on('-r', '--reverse') { options[:reverse] = true }
+# requireされた時に実行されないようにする
+if $0 == __FILE__
+  options = {}
+  cmd_line_options = OptionParser.new
+  cmd_line_options.on('-a', '--all') { options[:all] = true }
+  cmd_line_options.on('-r', '--reverse') { options[:reverse] = true }
+  cmd_line_options.on('-l', '--list') { options[:list] = true }
 
-paths = cmd_line_options.parse(ARGV)
-paths = ['.'] if paths.empty?
+  paths = cmd_line_options.parse(ARGV)
+  paths = ['.'] if paths.empty?
 
-LS.output(paths, options)
+  LS.output(paths, options)
+end
