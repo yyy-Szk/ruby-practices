@@ -54,7 +54,7 @@ class LS
     max_row_size.times do |i|
       row_content =
         columns
-        .map { |column| column.file_name(i) }
+        .map { |column| column.content(i) }
         .join(BLANK_AFTER_FILENAME)
         .strip
       puts row_content
@@ -69,18 +69,25 @@ class LS
     @options[:reverse] ? target_files.reverse : target_files
   end
 
-  Column = Struct.new(:file_names) do
-    def file_name(index)
-      file_names[index].to_s.ljust(column_length)
+  Column = Struct.new(:contents, :align) do
+    def content(index)
+      alignment_method =
+        case align
+        when 'right' then 'rjust'
+        when 'left' then 'ljust'
+        end
+
+        contents[index].to_s.send(alignment_method, column_length)
     end
 
     def column_length
-      @column_length ||= file_names.max_by(&:size).size
+      @column_length ||= contents.max_by(&:size).size
     end
   end
 
-  def build_column(filenames)
-    Column.new(filenames)
+  # デフォルトで 左揃えとする
+  def build_column(contents, align = 'left')
+    Column.new(contents, align)
   end
 
   def calculate_max_row_size(target_files)
