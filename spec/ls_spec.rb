@@ -19,7 +19,7 @@ RSpec.describe LS do
     context '引数あり(pathsの要素が1つ)の場合' do
       example '引数として指定したディレクトリ内のファイル一覧 が表示される' do
         expect { LS.output(['05.ls']) }.to(output(<<~FILE_LIST).to_stdout)
-          ls.rb
+          ls.rb   readme
         FILE_LIST
       end
     end
@@ -34,7 +34,7 @@ RSpec.describe LS do
           04.bowling    08.ls_object
 
           05.ls:
-          ls.rb
+          ls.rb   readme
         FILE_LIST
       end
     end
@@ -64,21 +64,33 @@ RSpec.describe LS do
     end
 
     context 'listオプションを渡した場合' do
-      example 'コマンドを実行したディレクトリ内のファイル一覧 が、ステータスと一緒に表示される' do
-        expect { LS.output(['.'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
-          total 8
-          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   2   9  19:56  01.fizzbuzz
-          drwxr-xr-x  3  yoshimasa-suzuki  staff    96  10   3  22:32  02.calendar
-          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  03.rake
-          drwxr-xr-x  4  yoshimasa-suzuki  staff   128   2  23  17:29  04.bowling
-          drwxr-xr-x  4  yoshimasa-suzuki  staff   128   2  23  17:29  05.ls
-          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  06.wc
-          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  07.bowling_object
-          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  08.ls_object
-          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  09.wc_object
-          -rw-r--r--  1  yoshimasa-suzuki  staff  2336   8  29  20:39  README.md
-          drwxr-xr-x  6  yoshimasa-suzuki  staff   192   2  23  15:43  spec
-        FILE_LIST
+      context "シンボリックリンクなしのケース" do
+        example 'コマンドを実行したディレクトリ内のファイル一覧 が、ステータスと一緒に表示される' do
+          expect { LS.output(['.'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
+            total 8
+            drwxr-xr-x  3  yoshimasa-suzuki  staff    96   2   9  19:56  01.fizzbuzz
+            drwxr-xr-x  3  yoshimasa-suzuki  staff    96  10   3  22:32  02.calendar
+            drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  03.rake
+            drwxr-xr-x  4  yoshimasa-suzuki  staff   128   2  23  17:29  04.bowling
+            drwxr-xr-x  4  yoshimasa-suzuki  staff   128   2  23  17:29  05.ls
+            drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  06.wc
+            drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  07.bowling_object
+            drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  08.ls_object
+            drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  09.wc_object
+            -rw-r--r--  1  yoshimasa-suzuki  staff  2336   8  29  20:39  README.md
+            drwxr-xr-x  6  yoshimasa-suzuki  staff   192   2  23  15:43  spec
+          FILE_LIST
+        end
+      end
+
+      context "シンボリックリンクありのケース" do
+        example 'コマンドを実行したディレクトリ内のファイル一覧 が、ステータスと一緒に表示される' do
+          expect { LS.output(['05.ls'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
+            total 16
+            -rwxr-xr-x  1  yoshimasa-suzuki  staff  5337  2  23  20:50  ls.rb
+            lrwxr-xr-x  1  yoshimasa-suzuki  staff    12  2  23  20:47  readme -> ../README.md
+          FILE_LIST
+        end
       end
     end
 
