@@ -63,15 +63,47 @@ RSpec.describe LS do
       end
     end
 
+    context 'listオプションを渡した場合' do
+      example 'コマンドを実行したディレクトリ内のファイル一覧 が、ステータスと一緒に表示される' do
+        expect { LS.output(['.'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
+          total 8
+          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   2   9  19:56  01.fizzbuzz
+          drwxr-xr-x  3  yoshimasa-suzuki  staff    96  10   3  22:32  02.calendar
+          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  03.rake
+          drwxr-xr-x  4  yoshimasa-suzuki  staff   128   2  23  17:29  04.bowling
+          drwxr-xr-x  4  yoshimasa-suzuki  staff   128   2  23  17:29  05.ls
+          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  06.wc
+          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  07.bowling_object
+          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  08.ls_object
+          drwxr-xr-x  3  yoshimasa-suzuki  staff    96   8  29  20:39  09.wc_object
+          -rw-r--r--  1  yoshimasa-suzuki  staff  2336   8  29  20:39  README.md
+          drwxr-xr-x  6  yoshimasa-suzuki  staff   192   2  23  15:43  spec
+        FILE_LIST
+      end
+    end
+
     context '全てのオプションを渡した場合' do
-      example 'コマンドを実行したディレクトリ内のファイル一覧 が、隠しファイルを含め、降順で表示される' do
-        expect { LS.output(['.'], { all: true, reverse: true }) }.to(output(<<~FILE_LIST).to_stdout)
-          spec                05.ls          .rspec
-          README.md           04.bowling     .gitignore
-          09.wc_object        03.rake        .git
-          08.ls_object        02.calendar    .DS_Store
-          07.bowling_object   01.fizzbuzz    ..
-          06.wc               .rubocop.yml   .
+      example 'コマンドを実行したディレクトリ内のファイル一覧 が、隠しファイルを含め、ステータスと一緒に「降順」で表示される' do
+        expect { LS.output(['.'], { all: true, reverse: true, list: true }) }.to(output(<<~FILE_LIST).to_stdout)
+          total 48
+          drwxr-xr-x   6  yoshimasa-suzuki  staff   192   2  23  15:43  spec
+          -rw-r--r--   1  yoshimasa-suzuki  staff  2336   8  29  20:39  README.md
+          drwxr-xr-x   3  yoshimasa-suzuki  staff    96   8  29  20:39  09.wc_object
+          drwxr-xr-x   3  yoshimasa-suzuki  staff    96   8  29  20:39  08.ls_object
+          drwxr-xr-x   3  yoshimasa-suzuki  staff    96   8  29  20:39  07.bowling_object
+          drwxr-xr-x   3  yoshimasa-suzuki  staff    96   8  29  20:39  06.wc
+          drwxr-xr-x   4  yoshimasa-suzuki  staff   128   2  23  17:29  05.ls
+          drwxr-xr-x   4  yoshimasa-suzuki  staff   128   2  23  17:29  04.bowling
+          drwxr-xr-x   3  yoshimasa-suzuki  staff    96   8  29  20:39  03.rake
+          drwxr-xr-x   3  yoshimasa-suzuki  staff    96  10   3  22:32  02.calendar
+          drwxr-xr-x   3  yoshimasa-suzuki  staff    96   2   9  19:56  01.fizzbuzz
+          -rw-r--r--   1  yoshimasa-suzuki  staff   254   1  19  19:21  .rubocop.yml
+          -rw-r--r--   1  yoshimasa-suzuki  staff    22  12  22  20:13  .rspec
+          -rw-r--r--   1  yoshimasa-suzuki  staff  2090   8  29  20:39  .gitignore
+          drwxr-xr-x  15  yoshimasa-suzuki  staff   480   2  23  20:24  .git
+          -rw-r--r--   1  yoshimasa-suzuki  staff  6148  12  13  19:56  .DS_Store
+          drwxr-xr-x   6  yoshimasa-suzuki  staff   192   2  23  18:37  ..
+          drwxr-xr-x  18  yoshimasa-suzuki  staff   576   2  23  20:20  .
         FILE_LIST
       end
     end
