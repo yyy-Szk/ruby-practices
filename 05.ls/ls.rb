@@ -2,12 +2,12 @@
 # frozen_string_literal: true
 
 require 'optparse'
-require "etc"
+require 'etc'
 
 class Array
   def split(size)
     nested_array = []
-    self.each do |value|
+    each do |value|
       if nested_array.last.nil? || nested_array.last.size >= size
         nested_array << [value]
       else
@@ -16,6 +16,117 @@ class Array
     end
 
     nested_array
+  end
+end
+
+class Column
+  attr_reader :contents, :align
+
+  ALIGNMENT_METHODS = { right: 'rjust', left: 'ljust' }.freeze
+
+  def initialize(contents, align)
+    # 配列に数値が含まれていた時のために追加
+    @contents = contents.map(&:to_s)
+    @align = align
+  end
+
+  def content(index)
+    contents[index].to_s.send(ALIGNMENT_METHODS[:align], column_length)
+  end
+
+  def column_length
+    @column_length ||= contents.max_by(&:size).size
+  end
+end
+
+class ListOptionColumns
+  attr_reader :file_path, :file_status
+
+  def initialize(file_path)
+    @file_path = file_path
+    # シンボリックリンクはそのままにしたいので、File#lstatを使用
+    @file_status = File.new(file_path).lstat
+  end
+
+  def sorted_column_list
+    # -lオプションで表示する項目の配列
+    [
+      file_type_and_permissions,
+      hard_link_count,
+      owner_name,
+      owner_group_name,
+      file_size,
+      month,
+      day,
+      time,
+      filename
+    ]
+  end
+
+  def block_size
+    # rubyのドキュメントを見ていると、nilになることもあるようなので #to_i する
+    file_status.blocks.to_i
+  end
+
+  private
+
+  def filename
+    name  = File.basename(file_path)
+    name += "\s->\s#{File.readlink(file_path)}" if file_status.symlink?
+
+    name
+  end
+
+  def file_type_and_permissions
+    file_types = { file: '-', directory: 'd', link: 'l' }
+
+    permissions =
+      file_status
+      .mode
+      .to_s(8)
+      .rjust(6, '0')
+      .slice(3, 5)
+      .each_char
+      .map { |char| build_permission(char.to_i.to_s(2)) }
+      .join
+
+    "#{file_types[file_status.ftype.to_sym]}#{permissions}"
+  end
+
+  def hard_link_count
+    file_status.nlink
+  end
+
+  def owner_name
+    Etc.getpwuid(file_status.uid).name
+  end
+
+  def owner_group_name
+    Etc.getgrgid(file_status.gid).name
+  end
+
+  def month
+    file_status.atime.month.to_s
+  end
+
+  def day
+    file_status.atime.day.to_s
+  end
+
+  def time
+    timestamp = file_status.atime
+
+    "#{timestamp.hour.to_s.rjust(2, '0')}:#{timestamp.min.to_s.rjust(2, '0')}"
+  end
+
+  def file_size
+    file_status.size
+  end
+
+  def build_permission(binary_num)
+    text  = binary_num[0] == '1' ? 'r' : '-'
+    text += binary_num[1] == '1' ? 'w' : '-'
+    text + binary_num[2] == '1' ? 'x' : '-'
   end
 end
 
@@ -67,101 +178,6 @@ class LS
     end
   end
 
-  ListOptionColumns = Struct.new(:file_path) do
-    attr_reader :file_status
-
-    def initialize(file_path)
-      super(file_path)
-      # シンボリックリンクはそのままにしたいので、File#lstatを使用
-      @file_status = File.new(file_path).lstat
-    end
-
-    def sorted_column_list
-      # -lオプションで表示する項目の配列
-      [
-        file_type_and_permissions,
-        hard_link_count,
-        owner_name,
-        owner_group_name,
-        file_size,
-        month,
-        day,
-        time,
-        filename
-      ]
-    end
-
-    def block_size
-      # rubyのドキュメントを見ていると、nilになることもあるようなので #to_i する
-      file_status.blocks.to_i
-    end
-
-    private
-
-    def filename
-      name  = File.basename(file_path)
-      name += "\s->\s#{File.readlink(file_path)}" if file_status.symlink?
-
-      name
-    end
-
-    def file_type_and_permissions
-      file_type = 
-        case file_status.ftype
-        when 'file' then '-'
-        when 'directory' then 'd'
-        when 'link' then 'l'
-        end
-      permissions = 
-        file_status
-        .mode
-        .to_s(8)
-        .rjust(6, "0")
-        .slice(3, 5)
-        .each_char
-        .map { |char| build_permission(char.to_i.to_s(2)) }
-        .join
-
-      "#{file_type}#{permissions}"
-    end
-
-    def hard_link_count
-      file_status.nlink
-    end
-
-    def owner_name
-      Etc.getpwuid(file_status.uid).name
-    end
-
-    def owner_group_name
-      Etc.getgrgid(file_status.gid).name
-    end
-
-    def month
-      file_status.atime.month.to_s
-    end
-
-    def day
-      file_status.atime.day.to_s
-    end
-    
-    def time
-      timestamp = file_status.atime
-
-      "#{timestamp.hour.to_s.rjust(2, "0")}:#{timestamp.min.to_s.rjust(2, "0")}"
-    end
-
-    def file_size
-      file_status.size
-    end
-
-    def build_permission(binary_num)
-      text  = binary_num[0] == '1' ? 'r' : '-'
-      text += binary_num[1] == '1' ? 'w' : '-'
-      text += binary_num[2] == '1' ? 'x' : '-'
-    end
-  end
-
   def output_file_detail_list(path, target_files)
     total_block_size = 0
     # -lオプションを使った場合、最大カラム数は1となる
@@ -176,10 +192,9 @@ class LS
     puts "total #{total_block_size}"
 
     # カラムごとに構造体にしたいので、#transpose して行と列を入れ替える
-    transposed_rows = rows.transpose
-    columns = transposed_rows.map.with_index(1) do |files, index|
+    columns = rows.transpose.map.with_index(1) do |files, index|
       # 一番最後の「ファイル名」だけ左揃えにする
-      align = index == transposed_rows.size ? 'left' : 'right'
+      align = index == rows.transpose.size ? 'left' : 'right'
 
       build_column(files, align)
     end
@@ -200,27 +215,6 @@ class LS
     target_files = Dir.glob(*glob_args, base: path).sort
 
     @options[:reverse] ? target_files.reverse : target_files
-  end
-
-  Column = Struct.new(:contents, :align) do
-    def initialize(contents, align)
-      # 配列に数値が含まれていた時のために追加
-      super(contents.map(&:to_s), align)
-    end
-
-    def content(index)
-      alignment_method =
-        case align
-        when 'right' then 'rjust'
-        when 'left' then 'ljust'
-        end
-
-      contents[index].to_s.send(alignment_method, column_length)
-    end
-
-    def column_length
-      @column_length ||= contents.max_by(&:size).size
-    end
   end
 
   # デフォルトで 左揃えとする

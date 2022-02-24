@@ -96,7 +96,7 @@ class BowlingScoreCalculator
 end
 
 # requireされた時に実行されないようにする
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   # 結果は第一引数に渡される
   throws = ARGV[0]
 

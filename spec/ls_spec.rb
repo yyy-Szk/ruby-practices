@@ -64,7 +64,7 @@ RSpec.describe LS do
     end
 
     context 'listオプションを渡した場合' do
-      context "シンボリックリンクなしのケース" do
+      context 'シンボリックリンクなしのケース' do
         example 'コマンドを実行したディレクトリ内のファイル一覧 が、ステータスと一緒に表示される' do
           expect { LS.output(['.'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
             total 8
@@ -83,7 +83,7 @@ RSpec.describe LS do
         end
       end
 
-      context "シンボリックリンクありのケース" do
+      context 'シンボリックリンクありのケース' do
         example 'コマンドを実行したディレクトリ内のファイル一覧 が、ステータスと一緒に表示される' do
           expect { LS.output(['05.ls'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
             total 16
