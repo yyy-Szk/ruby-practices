@@ -31,7 +31,7 @@ class Column
   end
 
   def content(index)
-    contents[index].to_s.send(ALIGNMENT_METHODS[:align], column_length)
+    contents[index].to_s.send(ALIGNMENT_METHODS[align.to_sym], column_length)
   end
 
   def column_length
@@ -126,7 +126,9 @@ class ListOptionColumns
   def build_permission(binary_num)
     text  = binary_num[0] == '1' ? 'r' : '-'
     text += binary_num[1] == '1' ? 'w' : '-'
-    text + binary_num[2] == '1' ? 'x' : '-'
+    text += binary_num[2] == '1' ? 'x' : '-'
+
+    text
   end
 end
 
@@ -189,7 +191,6 @@ class LS
 
       list_option_columns.sorted_column_list
     end
-    puts "total #{total_block_size}"
 
     # カラムごとに構造体にしたいので、#transpose して行と列を入れ替える
     columns = rows.transpose.map.with_index(1) do |files, index|
@@ -199,6 +200,8 @@ class LS
       build_column(files, align)
     end
 
+    # 出力
+    puts "total #{total_block_size}"
     max_row_size.times do |i|
       row_content =
         columns
