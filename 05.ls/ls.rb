@@ -3,6 +3,7 @@
 
 require 'optparse'
 require 'etc'
+require_relative 'extensions/file_util_wrapper'
 
 class Array
   def split(size)
@@ -89,8 +90,9 @@ class ListOptionColumns
       .each_char
       .map { |char| build_permission(char.to_i.to_s(2)) }
       .join
+    exist_xattr_icon = FileUtilWrapper.xattr_exist?(file_path) ? '@' : ''
 
-    "#{file_types[file_status.ftype.to_sym]}#{permissions}"
+    "#{file_types[file_status.ftype.to_sym]}#{permissions}#{exist_xattr_icon}"
   end
 
   def hard_link_count
@@ -194,8 +196,13 @@ class LS
 
     # カラムごとに構造体にしたいので、#transpose して行と列を入れ替える
     columns = rows.transpose.map.with_index(1) do |files, index|
-      # 一番最後の「ファイル名」だけ左揃えにする
-      align = index == rows.transpose.size ? 'left' : 'right'
+      # 最初と最後だけ左揃えにする
+      align =
+        if index == 1 || index == rows.transpose.size
+          'left'
+        else
+          'right'
+        end
 
       build_column(files, align)
     end
