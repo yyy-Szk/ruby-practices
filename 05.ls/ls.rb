@@ -117,8 +117,13 @@ class ListOptionColumns
 
   def time
     timestamp = file_status.atime
+    year = timestamp.year
 
-    "#{timestamp.hour.to_s.rjust(2, '0')}:#{timestamp.min.to_s.rjust(2, '0')}"
+    if year == timestamp.year
+      "#{timestamp.hour.to_s.rjust(2, '0')}:#{timestamp.min.to_s.rjust(2, '0')}"
+    else
+      year
+    end
   end
 
   def file_size
