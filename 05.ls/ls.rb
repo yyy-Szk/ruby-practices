@@ -5,6 +5,19 @@ require 'optparse'
 require 'etc'
 require_relative 'extensions/file_util_wrapper'
 
+class Time
+  def half_year_ago
+    target_year = self.year
+    target_month = mon - 6
+    if target_month < 0
+      target_year -= 1
+      target_month += 12
+    end
+
+    Time.new(target_year, target_month, day, hour, min, sec)
+  end
+end
+
 class Array
   def split(size)
     nested_array = []
@@ -117,12 +130,12 @@ class ListOptionColumns
 
   def time
     timestamp = file_status.atime
-    year = timestamp.year
 
-    if year == timestamp.year
-      "#{timestamp.hour.to_s.rjust(2, '0')}:#{timestamp.min.to_s.rjust(2, '0')}"
+    # 半年以上の場合、yearを表示する
+    if timestamp < Time.now.half_year_ago
+      timestamp.year
     else
-      year
+      "#{timestamp.hour.to_s.rjust(2, '0')}:#{timestamp.min.to_s.rjust(2, '0')}"
     end
   end
 
