@@ -121,15 +121,15 @@ class ListOptionColumns
   end
 
   def month
-    file_status.atime.month.to_s
+    file_status.ctime.month.to_s
   end
 
   def day
-    file_status.atime.day.to_s
+    file_status.ctime.day.to_s
   end
 
   def time
-    timestamp = file_status.atime
+    timestamp = file_status.ctime
 
     # 半年以上の場合、yearを表示する
     if timestamp < Time.now.half_year_ago
