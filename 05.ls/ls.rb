@@ -197,12 +197,7 @@ class LS
     # カラムごとに構造体にしたいので、#transpose して行と列を入れ替える
     columns = rows.transpose.map.with_index(1) do |files, index|
       # 最初と最後だけ左揃えにする
-      align =
-        if index == 1 || index == rows.transpose.size
-          'left'
-        else
-          'right'
-        end
+      align = index == 1 || index == rows.transpose.size ? 'left' : 'right'
 
       build_column(files, align)
     end

@@ -19,7 +19,7 @@ RSpec.describe LS do
     context '引数あり(pathsの要素が1つ)の場合' do
       example '引数として指定したディレクトリ内のファイル一覧 が表示される' do
         expect { LS.output(['05.ls']) }.to(output(<<~FILE_LIST).to_stdout)
-        extensions   ls.rb   readme
+          extensions   ls.rb   readme
         FILE_LIST
       end
     end
