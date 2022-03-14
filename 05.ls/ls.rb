@@ -153,9 +153,7 @@ class LS
 
     rows =
       target_files
-      # 縦並びを実現するために、「最大カラムごとの2次元配列」にしてから #transpose している
       .each_slice(max_row_size)
-      # #transposeするために、要素数が max_row_size に満たないものを nil で埋めている
       .map { |sliced_files| sliced_files.values_at(0...max_row_size) }
       .transpose
 
