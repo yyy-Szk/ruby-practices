@@ -18,41 +18,6 @@ class Time
   end
 end
 
-class Array
-  def split(size)
-    nested_array = []
-    each do |value|
-      if nested_array.last.nil? || nested_array.last.size >= size
-        nested_array << [value]
-      else
-        nested_array.last << value
-      end
-    end
-
-    nested_array
-  end
-end
-
-class Column
-  attr_reader :contents, :align
-
-  ALIGNMENT_METHODS = { right: 'rjust', left: 'ljust' }.freeze
-
-  def initialize(contents, align)
-    # 配列に数値が含まれていた時のために追加
-    @contents = contents.map(&:to_s)
-    @align = align
-  end
-
-  def content(index)
-    contents[index].to_s.send(ALIGNMENT_METHODS[align.to_sym], column_length)
-  end
-
-  def column_length
-    @column_length ||= contents.max_by(&:size).size
-  end
-end
-
 class ListOptionColumns
   attr_reader :file_path, :file_status
 
