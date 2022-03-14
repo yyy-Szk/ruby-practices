@@ -185,19 +185,41 @@ class LS
 
   def output_file_list(target_files)
     max_row_size = calculate_max_row_size(target_files)
-    columns =
-      target_files
-      .split(max_row_size)
-      .map { |splitted_files| build_column(splitted_files) }
 
-    max_row_size.times do |i|
-      row_content =
-        columns
-        .map { |column| column.content(i) }
-        .join(BLANK_AFTER_FILENAME)
-        .strip
-      puts row_content
+    rows =
+      target_files
+      # 縦並びを実現するために、「最大カラムごとの2次元配列」にしてから #transpose している
+      .each_slice(max_row_size)
+      # #transposeするために、要素数が max_row_size に満たないものを nil で埋めている
+      .map { |sliced_files| sliced_files.values_at(0...max_row_size) }
+      .transpose
+
+    align_columns(rows).each do |row|
+      puts row.join(BLANK_AFTER_FILENAME).strip
     end
+  end
+
+  def align_columns(rows)
+    return rows if rows.size == 1
+
+    # 引数を破壊的に変更することを防ぐために #dup する
+    duplicated_rows = rows.dup
+
+    MAX_COLUMN_SIZE.times do |column_no|
+      column_length = calculate_column_length(duplicated_rows, column_no)
+      duplicated_rows.each do |duplicated_row|
+        duplicated_row[column_no] = duplicated_row[column_no].to_s.ljust(column_length)
+      end
+    end
+
+    duplicated_rows
+  end
+
+  def calculate_column_length(rows, column_no)
+    rows
+      .map { |row| row[column_no].to_s }
+      .max_by(&:size)
+      .size
   end
 
   def output_file_detail_list(path, target_files)
@@ -240,13 +262,12 @@ class LS
     @options[:reverse] ? target_files.reverse : target_files
   end
 
-  # デフォルトで 左揃えとする
   def build_column(contents, align = 'left')
     Column.new(contents, align)
   end
 
-  def calculate_max_row_size(target_files, max_column_size = MAX_COLUMN_SIZE)
-    (target_files.size.to_f / max_column_size).ceil
+  def calculate_max_row_size(target_files)
+    (target_files.size.to_f / MAX_COLUMN_SIZE).ceil
   end
 end
 
