@@ -5,19 +5,6 @@ require 'optparse'
 require 'etc'
 require_relative 'extensions/file_util_wrapper'
 
-class Time
-  def half_year_ago
-    target_year = self.year
-    target_month = mon - 6
-    if target_month < 0
-      target_year -= 1
-      target_month += 12
-    end
-
-    Time.new(target_year, target_month, day, hour, min, sec)
-  end
-end
-
 class ListOptionColumns
   attr_reader :file_path, :file_status
 
@@ -28,7 +15,6 @@ class ListOptionColumns
   end
 
   def sorted_column_list
-    # -lオプションで表示する項目の配列
     [
       file_type_and_permissions,
       hard_link_count,
@@ -96,8 +82,7 @@ class ListOptionColumns
   def time
     timestamp = file_status.ctime
 
-    # 半年以上の場合、yearを表示する
-    if timestamp < Time.now.half_year_ago
+    if timestamp < calculate_half_year_ago(Time.now)
       timestamp.year
     else
       "#{timestamp.hour.to_s.rjust(2, '0')}:#{timestamp.min.to_s.rjust(2, '0')}"
@@ -114,6 +99,17 @@ class ListOptionColumns
     text += binary_num[2] == '1' ? 'x' : '-'
 
     text
+  end
+
+  def calculate_half_year_ago(time)
+    target_year = time.year
+    target_month = time.mon - 6
+    if target_month < 0
+      target_year -= 1
+      target_month += 12
+    end
+
+    Time.new(target_year, target_month, time.day, time.hour, time.min, time.sec)
   end
 end
 
@@ -154,41 +150,24 @@ class LS
     rows =
       target_files
       .each_slice(max_row_size)
-      .map { |sliced_files| sliced_files.values_at(0...max_row_size) }
+      .map { |sliced_files| align_contents(sliced_files.values_at(0...max_row_size), 'left', sliced_files.max_by(&:size).size) }
       .transpose
 
-    align_columns(rows).each do |row|
+    rows.each do |row|
       puts row.join(BLANK_AFTER_FILENAME).strip
     end
   end
 
-  def align_columns(rows)
-    return rows if rows.size == 1
-
-    # 引数を破壊的に変更することを防ぐために #dup する
-    duplicated_rows = rows.dup
-
-    MAX_COLUMN_SIZE.times do |column_no|
-      column_length = calculate_column_length(duplicated_rows, column_no)
-      duplicated_rows.each do |duplicated_row|
-        duplicated_row[column_no] = duplicated_row[column_no].to_s.ljust(column_length)
-      end
+  def align_contents(array, aligment_direction, width_to_align)
+    if aligment_direction == 'right'
+      array.map { |content| content.to_s.rjust(width_to_align) }
+    else
+      array.map { |content| content.to_s.ljust(width_to_align) }
     end
-
-    duplicated_rows
-  end
-
-  def calculate_column_length(rows, column_no)
-    rows
-      .map { |row| row[column_no].to_s }
-      .max_by(&:size)
-      .size
   end
 
   def output_file_detail_list(path, target_files)
     total_block_size = 0
-    # -lオプションを使った場合、最大カラム数は1となる
-    max_row_size = calculate_max_row_size(target_files, 1)
 
     rows = target_files.map do |filename|
       list_option_columns = ListOptionColumns.new(File.join(path, filename))
@@ -197,23 +176,34 @@ class LS
       list_option_columns.sorted_column_list
     end
 
-    # カラムごとに構造体にしたいので、#transpose して行と列を入れ替える
-    columns = rows.transpose.map.with_index(1) do |files, index|
-      # 最初と最後だけ左揃えにする
-      align = index == 1 || index == rows.transpose.size ? 'left' : 'right'
-
-      build_column(files, align)
-    end
-
-    # 出力
     puts "total #{total_block_size}"
-    max_row_size.times do |i|
-      row_content =
-        columns
-        .map { |column| column.content(i) }
-        .join("\s\s")
-        .strip
-      puts row_content
+
+    # カラムごとの横幅を揃えるために、一度 #transpose して行と列を入れ替え、揃えた後で再度 #transpose して元に戻している
+    sorted_rows =
+      rows
+      .transpose
+      .map.with_index(0) do |columns, column_no|
+        aligment_direction =
+          case column_no
+          when 0, 2, 3, 8 then "left"
+          else "right"
+          end
+        width_to_align =
+          case column_no
+          when 0 then 11
+          when 2, 3 then columns.map(&:to_s).max_by(&:size).size + 1
+          when 5, 6 then 2
+          when 7 then 5
+          else
+            columns.map(&:to_s).max_by(&:size).size
+          end
+
+        align_contents(columns, aligment_direction, width_to_align)
+      end
+      .transpose
+
+    sorted_rows.each do |row|
+      puts row.join("\s").strip
     end
   end
 
@@ -223,10 +213,6 @@ class LS
     target_files = Dir.glob(*glob_args, base: path).sort
 
     @options[:reverse] ? target_files.reverse : target_files
-  end
-
-  def build_column(contents, align = 'left')
-    Column.new(contents, align)
   end
 
   def calculate_max_row_size(target_files)
