@@ -95,19 +95,16 @@ class BowlingScoreCalculator
   end
 end
 
-# requireされた時に実行されないようにする
-if $PROGRAM_NAME == __FILE__
-  # 結果は第一引数に渡される
-  throws = ARGV[0]
+# 結果は第一引数に渡される
+throws = ARGV[0]
 
-  # 入力忘れ用
-  if throws.nil?
-    puts '第一引数に結果を渡してください。'
-    return
-  end
-
-  bowling_score_calculator = BowlingScoreCalculator.new(throws)
-  bowling_score_calculator.calculate
-
-  puts bowling_score_calculator.total_score
+# 入力忘れ用
+if throws.nil?
+  puts '第一引数に結果を渡してください。'
+  return
 end
+
+bowling_score_calculator = BowlingScoreCalculator.new(throws)
+bowling_score_calculator.calculate
+
+puts bowling_score_calculator.total_score

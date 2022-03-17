@@ -88,10 +88,10 @@ RSpec.describe LS do
         example 'コマンドを実行したディレクトリ内のファイル一覧 が、ステータスと一緒に表示される' do
           expect { LS.output(['05.ls'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
             total 16
-            drwxr-xr-x  10 yoshimasa-suzuki  staff   320  3 12 14:07 extensions
-            -rw-r--r--   1 yoshimasa-suzuki  staff  2395  3 17 19:52 list_option_columns.rb
-            -rwxr-xr-x   1 yoshimasa-suzuki  staff  5708  3 16 19:28 ls.rb
-            lrwxr-xr-x   1 yoshimasa-suzuki  staff    12  2 23 20:47 readme -> ../README.md
+            drwxr-xr-x  9 yoshimasa-suzuki  staff   320  3 12 14:07 extensions
+            -rw-r--r--  1 yoshimasa-suzuki  staff  2395  3 17 19:52 list_option_columns.rb
+            -rwxr-xr-x  1 yoshimasa-suzuki  staff  5708  3 16 19:28 ls.rb
+            lrwxr-xr-x  1 yoshimasa-suzuki  staff    12  2 23 20:47 readme -> ../README.md
           FILE_LIST
         end
       end

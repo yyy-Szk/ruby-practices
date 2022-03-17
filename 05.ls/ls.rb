@@ -114,16 +114,13 @@ class LS
   end
 end
 
-# requireされた時に実行されないようにする
-if $PROGRAM_NAME == __FILE__
-  options = {}
-  cmd_line_options = OptionParser.new
-  cmd_line_options.on('-a', '--all') { options[:all] = true }
-  cmd_line_options.on('-r', '--reverse') { options[:reverse] = true }
-  cmd_line_options.on('-l', '--list') { options[:list] = true }
+options = {}
+cmd_line_options = OptionParser.new
+cmd_line_options.on('-a', '--all') { options[:all] = true }
+cmd_line_options.on('-r', '--reverse') { options[:reverse] = true }
+cmd_line_options.on('-l', '--list') { options[:list] = true }
 
-  paths = cmd_line_options.parse(ARGV)
-  paths = ['.'] if paths.empty?
+paths = cmd_line_options.parse(ARGV)
+paths = ['.'] if paths.empty?
 
-  LS.output(paths, options)
-end
+LS.output(paths, options)
