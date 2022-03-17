@@ -19,7 +19,8 @@ RSpec.describe LS do
     context '引数あり(pathsの要素が1つ)の場合' do
       example '引数として指定したディレクトリ内のファイル一覧 が表示される' do
         expect { LS.output(['05.ls']) }.to(output(<<~FILE_LIST).to_stdout)
-          extensions   ls.rb   readme
+          extensions               ls.rb
+          list_option_columns.rb   readme
         FILE_LIST
       end
     end
@@ -88,6 +89,7 @@ RSpec.describe LS do
           expect { LS.output(['05.ls'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
             total 16
             drwxr-xr-x  10 yoshimasa-suzuki  staff   320  3 12 14:07 extensions
+            -rw-r--r--   1 yoshimasa-suzuki  staff  2395  3 17 19:52 list_option_columns.rb
             -rwxr-xr-x   1 yoshimasa-suzuki  staff  5708  3 16 19:28 ls.rb
             lrwxr-xr-x   1 yoshimasa-suzuki  staff    12  2 23 20:47 readme -> ../README.md
           FILE_LIST
