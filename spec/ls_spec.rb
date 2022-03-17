@@ -35,7 +35,8 @@ RSpec.describe LS do
           04.bowling    08.ls_object
 
           05.ls:
-          extensions   ls.rb   readme
+          extensions               ls.rb
+          list_option_columns.rb   readme
         FILE_LIST
       end
     end
@@ -70,16 +71,16 @@ RSpec.describe LS do
           expect { LS.output(['.'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
             total 8
             drwxr-xr-x  3 yoshimasa-suzuki  staff    96  2  9 19:56 01.fizzbuzz
-            drwxr-xr-x  3 yoshimasa-suzuki  staff    96 10  3 22:32 02.calendar
+            drwxr-xr-x  3 yoshimasa-suzuki  staff    96  3 12 15:10 02.calendar
             drwxr-xr-x  3 yoshimasa-suzuki  staff    96  8 29  2021 03.rake
-            drwxr-xr-x  4 yoshimasa-suzuki  staff   128  3  2 11:33 04.bowling
-            drwxr-xr-x  6 yoshimasa-suzuki  staff   192  3 10 23:58 05.ls
+            drwxr-xr-x  4 yoshimasa-suzuki  staff   128  3 17 20:02 04.bowling
+            drwxr-xr-x  7 yoshimasa-suzuki  staff   224  3 17 19:52 05.ls
             drwxr-xr-x  3 yoshimasa-suzuki  staff    96  8 29  2021 06.wc
             drwxr-xr-x  3 yoshimasa-suzuki  staff    96  8 29  2021 07.bowling_object
             drwxr-xr-x  3 yoshimasa-suzuki  staff    96  8 29  2021 08.ls_object
             drwxr-xr-x  3 yoshimasa-suzuki  staff    96  8 29  2021 09.wc_object
             -rw-r--r--  1 yoshimasa-suzuki  staff  2336  8 29  2021 README.md
-            drwxr-xr-x  6 yoshimasa-suzuki  staff   192  3  2 11:33 spec
+            drwxr-xr-x  6 yoshimasa-suzuki  staff   192  2 23 15:43 spec
           FILE_LIST
         end
       end
@@ -88,9 +89,9 @@ RSpec.describe LS do
         example 'コマンドを実行したディレクトリ内のファイル一覧 が、ステータスと一緒に表示される' do
           expect { LS.output(['05.ls'], { list: true }) }.to(output(<<~FILE_LIST).to_stdout)
             total 16
-            drwxr-xr-x  9 yoshimasa-suzuki  staff   320  3 12 14:07 extensions
-            -rw-r--r--  1 yoshimasa-suzuki  staff  2395  3 17 19:52 list_option_columns.rb
-            -rwxr-xr-x  1 yoshimasa-suzuki  staff  5708  3 16 19:28 ls.rb
+            drwxr-xr-x  9 yoshimasa-suzuki  staff   288  3 17 20:05 extensions
+            -rw-r--r--  1 yoshimasa-suzuki  staff  2396  3 17 19:56 list_option_columns.rb
+            -rwxr-xr-x  1 yoshimasa-suzuki  staff  3405  3 17 20:05 ls.rb
             lrwxr-xr-x  1 yoshimasa-suzuki  staff    12  2 23 20:47 readme -> ../README.md
           FILE_LIST
         end
@@ -101,24 +102,24 @@ RSpec.describe LS do
       example 'コマンドを実行したディレクトリ内のファイル一覧 が、隠しファイルを含め、ステータスと一緒に「降順」で表示される' do
         expect { LS.output(['.'], { all: true, reverse: true, list: true }) }.to(output(<<~FILE_LIST).to_stdout)
           total 48
-          drwxr-xr-x   6 yoshimasa-suzuki  staff   192  3  2 11:33 spec
+          drwxr-xr-x   6 yoshimasa-suzuki  staff   192  2 23 15:43 spec
           -rw-r--r--   1 yoshimasa-suzuki  staff  2336  8 29  2021 README.md
           drwxr-xr-x   3 yoshimasa-suzuki  staff    96  8 29  2021 09.wc_object
           drwxr-xr-x   3 yoshimasa-suzuki  staff    96  8 29  2021 08.ls_object
           drwxr-xr-x   3 yoshimasa-suzuki  staff    96  8 29  2021 07.bowling_object
           drwxr-xr-x   3 yoshimasa-suzuki  staff    96  8 29  2021 06.wc
-          drwxr-xr-x   6 yoshimasa-suzuki  staff   192  3 10 23:58 05.ls
-          drwxr-xr-x   4 yoshimasa-suzuki  staff   128  3  2 11:33 04.bowling
+          drwxr-xr-x   7 yoshimasa-suzuki  staff   224  3 17 19:52 05.ls
+          drwxr-xr-x   4 yoshimasa-suzuki  staff   128  3 17 20:02 04.bowling
           drwxr-xr-x   3 yoshimasa-suzuki  staff    96  8 29  2021 03.rake
-          drwxr-xr-x   3 yoshimasa-suzuki  staff    96 10  3 22:32 02.calendar
+          drwxr-xr-x   3 yoshimasa-suzuki  staff    96  3 12 15:10 02.calendar
           drwxr-xr-x   3 yoshimasa-suzuki  staff    96  2  9 19:56 01.fizzbuzz
           -rw-r--r--   1 yoshimasa-suzuki  staff   254  1 19 19:21 .rubocop.yml
           -rw-r--r--   1 yoshimasa-suzuki  staff    22 12 22 20:13 .rspec
           -rw-r--r--   1 yoshimasa-suzuki  staff  2090  8 29  2021 .gitignore
-          drwxr-xr-x  15 yoshimasa-suzuki  staff   480  3  3 19:18 .git
-          -rw-r--r--@  1 yoshimasa-suzuki  staff  6148 12 13 19:56 .DS_Store
-          drwxr-xr-x   7 yoshimasa-suzuki  staff   224  3  2 11:33 ..
-          drwxr-xr-x  18 yoshimasa-suzuki  staff   576  3  3 19:17 .
+          drwxr-xr-x  15 yoshimasa-suzuki  staff   480  3 17 20:54 .git
+          -rw-r--r--@  1 yoshimasa-suzuki  staff  6148 12 13 09:24 .DS_Store
+          drwxr-xr-x   7 yoshimasa-suzuki  staff   224  2 28 19:19 ..
+          drwxr-xr-x  18 yoshimasa-suzuki  staff   576  3 14 20:14 .
         FILE_LIST
       end
     end
