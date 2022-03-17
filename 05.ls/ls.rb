@@ -15,17 +15,17 @@ class ListOptionColumns
   end
 
   def sorted_column_list
-    [
-      file_type_and_permissions,
-      hard_link_count,
-      owner_name,
-      owner_group_name,
-      file_size,
-      month,
-      day,
-      time,
-      filename
-    ]
+    {
+      file_type_and_permissions: file_type_and_permissions,
+      hard_link_count: hard_link_count,
+      owner_name: owner_name,
+      owner_group_name: owner_group_name,
+      file_size: file_size,
+      month: month,
+      day: day,
+      time: time,
+      filename: filename
+    }
   end
 
   def block_size
@@ -104,7 +104,7 @@ class ListOptionColumns
   def calculate_half_year_ago(time)
     target_year = time.year
     target_month = time.mon - 6
-    if target_month < 0
+    if target_month.negative?
       target_year -= 1
       target_month += 12
     end
@@ -178,32 +178,34 @@ class LS
 
     puts "total #{total_block_size}"
 
-    # カラムごとの横幅を揃えるために、一度 #transpose して行と列を入れ替え、揃えた後で再度 #transpose して元に戻している
-    sorted_rows =
-      rows
-      .transpose
-      .map.with_index(0) do |columns, column_no|
-        aligment_direction =
-          case column_no
-          when 0, 2, 3, 8 then "left"
-          else "right"
-          end
-        width_to_align =
-          case column_no
-          when 0 then 11
-          when 2, 3 then columns.map(&:to_s).max_by(&:size).size + 1
-          when 5, 6 then 2
-          when 7 then 5
-          else
-            columns.map(&:to_s).max_by(&:size).size
-          end
-
-        align_contents(columns, aligment_direction, width_to_align)
+    rows.each do |row|
+      aligned_columns = row.map do |column_name, column_value|
+        align_list_option_column(column_name, column_value, rows)
       end
-      .transpose
+      puts aligned_columns.join("\s").strip
+    end
+  end
 
-    sorted_rows.each do |row|
-      puts row.join("\s").strip
+  def align_list_option_column(column_name, column_value, rows)
+    max_column_size = rows.map { |row| row[column_name].to_s }.max_by(&:size).size
+    aligment_direction =
+      case column_name
+      when :file_type_and_permissions, :owner_name, :owner_group_name, :filename then 'left'
+      else 'right'
+      end
+    width_to_align =
+      case column_name
+      when :file_type_and_permissions then 11
+      when :owner_name, :owner_group_name then max_column_size + 1
+      when :month, :day then 2
+      when :time then 5
+      else max_column_size
+      end
+
+    if aligment_direction == 'right'
+      column_value.to_s.rjust(width_to_align)
+    else
+      column_value.to_s.ljust(width_to_align)
     end
   end
 
