@@ -3,7 +3,7 @@
 
 require 'optparse'
 require_relative 'extensions/file_util_wrapper'
-require_relative 'list_option_columns'
+require_relative 'file_detail'
 
 class LS
   MAX_COLUMN_SIZE = 3
@@ -59,43 +59,52 @@ class LS
     total_block_size = 0
 
     rows = target_files.map do |filename|
-      list_option_columns = ListOptionColumns.new(File.join(path, filename))
-      total_block_size += list_option_columns.block_size
+      file_detail = FileDetail.new(File.join(path, filename))
+      total_block_size += file_detail.block_size
 
-      list_option_columns.sorted_column_list
+      file_detail
     end
 
     puts "total #{total_block_size}"
 
+    max_column_size_by_column_name = calculate_max_column_size_by_column_name(rows)
     rows.each do |row|
-      aligned_columns = row.map do |column_name, column_value|
-        align_list_option_column(column_name, column_value, rows)
-      end
-      puts aligned_columns.join("\s").strip
+      puts format_row(row, max_column_size_by_column_name)
     end
   end
 
-  def align_list_option_column(column_name, column_value, rows)
-    max_column_size = rows.map { |row| row[column_name].to_s }.max_by(&:size).size
-    aligment_direction =
-      case column_name
-      when :file_type_and_permissions, :owner_name, :owner_group_name, :filename then 'left'
-      else 'right'
-      end
-    width_to_align =
-      case column_name
-      when :file_type_and_permissions then 11
-      when :owner_name, :owner_group_name then max_column_size + 1
-      when :month, :day then 2
-      when :time then 5
-      else max_column_size
-      end
+  def format_row(row, max_column_size_by_column_name)
+    cols = []
+    cols << row.file_type_and_permissions.to_s.ljust(11)
+    cols << row.hard_link_count.to_s.rjust(max_column_size_by_column_name[:hard_link_count])
+    cols << row.owner_name.to_s.ljust(max_column_size_by_column_name[:owner_name] + 1)
+    cols << row.owner_group_name.to_s.ljust(max_column_size_by_column_name[:owner_group_name] + 1)
+    cols << row.file_size.to_s.rjust(max_column_size_by_column_name[:file_size])
+    cols << row.datetime.to_s
+    cols << row.filename.to_s
 
-    if aligment_direction == 'right'
-      column_value.to_s.rjust(width_to_align)
-    else
-      column_value.to_s.ljust(width_to_align)
+    cols.join("\s").strip
+  end
+
+  def calculate_max_column_size_by_column_name(rows)
+    column_names = %i[
+      file_type_and_permissions
+      hard_link_count
+      owner_name
+      owner_group_name
+      file_size
+      datetime
+      filename
+    ]
+
+    max_column_size_by_column_name = {}
+    column_names.each do |column_name|
+      max_column_size = rows.map { |row| row.send(column_name).to_s }.max_by(&:size).size
+
+      max_column_size_by_column_name[column_name] = max_column_size
     end
+
+    max_column_size_by_column_name
   end
 
   def fetch_target_files(path)

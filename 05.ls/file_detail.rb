@@ -2,7 +2,7 @@
 
 require 'etc'
 
-class ListOptionColumns
+class FileDetail
   attr_reader :file_path, :file_status
 
   def initialize(file_path)
@@ -11,26 +11,10 @@ class ListOptionColumns
     @file_status = File.new(file_path).lstat
   end
 
-  def sorted_column_list
-    {
-      file_type_and_permissions: file_type_and_permissions,
-      hard_link_count: hard_link_count,
-      owner_name: owner_name,
-      owner_group_name: owner_group_name,
-      file_size: file_size,
-      month: month,
-      day: day,
-      time: time,
-      filename: filename
-    }
-  end
-
   def block_size
     # rubyのドキュメントを見ていると、nilになることもあるようなので #to_i する
     file_status.blocks.to_i
   end
-
-  private
 
   def filename
     name  = File.basename(file_path)
@@ -68,27 +52,21 @@ class ListOptionColumns
     Etc.getgrgid(file_status.gid).name
   end
 
-  def month
-    file_status.ctime.month.to_s
-  end
-
-  def day
-    file_status.ctime.day.to_s
-  end
-
-  def time
+  def datetime
     timestamp = file_status.ctime
 
     if timestamp < calculate_half_year_ago(Time.now)
-      timestamp.year
+      timestamp.strftime("%_m\s%e\s\s%Y")
     else
-      "#{timestamp.hour.to_s.rjust(2, '0')}:#{timestamp.min.to_s.rjust(2, '0')}"
+      timestamp.strftime("%_m\s%e\s%H:%M")
     end
   end
 
   def file_size
     file_status.size
   end
+
+  private
 
   def build_permission(binary_num)
     text  = binary_num[0] == '1' ? 'r' : '-'
