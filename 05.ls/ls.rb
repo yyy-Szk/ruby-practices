@@ -37,24 +37,21 @@ class LS
   private
 
   def output_file_list(target_files)
-    max_row_size = calculate_max_row_size(target_files)
+    max_row_size = (target_files.size.to_f / MAX_COLUMN_SIZE).ceil
 
     rows =
       target_files
       .each_slice(max_row_size)
-      .map { |sliced_files| align_contents(sliced_files.values_at(0...max_row_size), 'left', sliced_files.max_by(&:size).size) }
+      .map do |sliced_files|
+        width_to_align = sliced_files.max_by(&:size).size
+        sliced_files_padding_by_nil = sliced_files.values_at(0...max_row_size)
+
+        sliced_files_padding_by_nil.map { |file| file.to_s.ljust(width_to_align) }
+      end
       .transpose
 
     rows.each do |row|
       puts row.join(BLANK_AFTER_FILENAME).strip
-    end
-  end
-
-  def align_contents(array, aligment_direction, width_to_align)
-    if aligment_direction == 'right'
-      array.map { |content| content.to_s.rjust(width_to_align) }
-    else
-      array.map { |content| content.to_s.ljust(width_to_align) }
     end
   end
 
@@ -107,10 +104,6 @@ class LS
     target_files = Dir.glob(*glob_args, base: path).sort
 
     @options[:reverse] ? target_files.reverse : target_files
-  end
-
-  def calculate_max_row_size(target_files)
-    (target_files.size.to_f / MAX_COLUMN_SIZE).ceil
   end
 end
 
