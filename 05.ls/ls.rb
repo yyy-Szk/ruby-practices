@@ -44,9 +44,9 @@ class LS
       .each_slice(max_row_size)
       .map do |sliced_files|
         width_to_align = sliced_files.max_by(&:size).size
-        sliced_files_padding_by_nil = sliced_files.values_at(0...max_row_size)
+        nil_filled_files = sliced_files.values_at(0...max_row_size)
 
-        sliced_files_padding_by_nil.map { |file| file.to_s.ljust(width_to_align) }
+        nil_filled_files.map { |file_or_nil| file_or_nil.to_s.ljust(width_to_align) }
       end
       .transpose
 
@@ -58,7 +58,7 @@ class LS
   def output_file_detail_list(path, target_files)
     total_block_size = 0
 
-    rows = target_files.map do |filename|
+    file_details = target_files.map do |filename|
       file_detail = FileDetail.new(File.join(path, filename))
       total_block_size += file_detail.block_size
 
@@ -67,26 +67,26 @@ class LS
 
     puts "total #{total_block_size}"
 
-    max_column_size_by_column_name = calculate_max_column_size_by_column_name(rows)
-    rows.each do |row|
-      puts format_row(row, max_column_size_by_column_name)
+    max_column_table = build_max_column_table(file_details)
+    file_details.each do |row|
+      puts format_row(row, max_column_table)
     end
   end
 
-  def format_row(row, max_column_size_by_column_name)
+  def format_row(row, max_column_table)
     cols = []
-    cols << row.file_type_and_permissions.to_s.ljust(11)
-    cols << row.hard_link_count.to_s.rjust(max_column_size_by_column_name[:hard_link_count])
-    cols << row.owner_name.to_s.ljust(max_column_size_by_column_name[:owner_name] + 1)
-    cols << row.owner_group_name.to_s.ljust(max_column_size_by_column_name[:owner_group_name] + 1)
-    cols << row.file_size.to_s.rjust(max_column_size_by_column_name[:file_size])
-    cols << row.datetime.to_s
-    cols << row.filename.to_s
+    cols << row.file_type_and_permissions.ljust(11)
+    cols << row.hard_link_count.to_s.rjust(max_column_table[:hard_link_count])
+    cols << row.owner_name.ljust(max_column_table[:owner_name] + 1)
+    cols << row.owner_group_name.ljust(max_column_table[:owner_group_name] + 1)
+    cols << row.file_size.to_s.rjust(max_column_table[:file_size])
+    cols << row.datetime
+    cols << row.filename
 
     cols.join("\s").strip
   end
 
-  def calculate_max_column_size_by_column_name(rows)
+  def build_max_column_table(file_details)
     column_names = %i[
       file_type_and_permissions
       hard_link_count
@@ -97,14 +97,11 @@ class LS
       filename
     ]
 
-    max_column_size_by_column_name = {}
-    column_names.each do |column_name|
-      max_column_size = rows.map { |row| row.send(column_name).to_s }.max_by(&:size).size
+    column_names.to_h do |column_name|
+      max_column_size = file_details.map { |row| row.send(column_name).to_s }.max_by(&:size).size
 
-      max_column_size_by_column_name[column_name] = max_column_size
+      [column_name, max_column_size]
     end
-
-    max_column_size_by_column_name
   end
 
   def fetch_target_files(path)
