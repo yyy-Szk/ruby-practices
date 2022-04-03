@@ -6,7 +6,7 @@ RSpec.describe WC do
   describe 'self.output' do
     # ruby-practicesディレクトリから実行されることを想定
     context 'ファイルのパスが空でかつ、標準入力を渡した場合' do
-      example "標準入力に対する改行数、単語数、バイト数が順に表示される" do
+      example '標準入力に対する改行数、単語数、バイト数が順に表示される' do
         file_paths = []
         std_input = "hello world!\nhello world!"
 
@@ -17,7 +17,7 @@ RSpec.describe WC do
     end
 
     context 'ファイルのパスを1つ渡した場合' do
-      example "ファイルに対する改行数、単語数、バイト数が順に表示される" do
+      example 'ファイルに対する改行数、単語数、バイト数が順に表示される' do
         file_paths = ['spec/06.wc/sample.txt']
         std_input = ''
 
@@ -28,7 +28,7 @@ RSpec.describe WC do
     end
 
     context 'ファイルのパスを2つ渡した場合' do
-      example "ファイルごとに、改行数、単語数、バイト数が順に表示され、最後に合計が出力される" do
+      example 'ファイルごとに、改行数、単語数、バイト数が順に表示され、最後に合計が出力される' do
         file_paths = ['spec/06.wc/sample.txt', 'spec/06.wc/hoge.txt']
         std_input = ''
 
@@ -55,7 +55,7 @@ RSpec.describe WC do
       end
 
       context 'ファイルパスを渡したとき' do
-        example "ファイルに対する改行数およびファイル名が順に表示される" do
+        example 'ファイルに対する改行数およびファイル名が順に表示される' do
           file_paths = ['spec/06.wc/sample.txt']
           std_input = ''
 

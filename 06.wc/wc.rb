@@ -4,7 +4,7 @@
 require 'optparse'
 
 class WC
-  ANY_WHITE_SPACE_REGEX = /[\x09-\x0d\x20]+/
+  ANY_WHITE_SPACE_REGEX = /[\x09-\x0d\x20]+/.freeze
 
   def self.output(file_paths, std_input, options = {})
     WC.new(file_paths, std_input, options).output
@@ -31,44 +31,40 @@ class WC
     total_number_of_words = 0
     total_content_bytesize = 0
 
-    output_content_list = @file_paths.map do |file_path|
+    @file_paths.each do |file_path|
       file_content = File.read(file_path)
-      number_of_lines = file_content.count("\n")
-      number_of_words = file_content.split(ANY_WHITE_SPACE_REGEX).count
-      content_bytesize = file_content.bytesize
+      output_content_table = build_output_content_table(file_content)
 
-      total_number_of_lines += number_of_lines
-      total_number_of_words += number_of_words
-      total_content_bytesize += content_bytesize
+      total_number_of_lines  += output_content_table[:number_of_lines]
+      total_number_of_words  += output_content_table[:number_of_words]
+      total_content_bytesize += output_content_table[:content_bytesize]
 
-      output_content = number_of_lines.to_s.rjust(8)
-      unless @options[:lines]
-        output_content += number_of_words.to_s.rjust(8)
-        output_content += content_bytesize.to_s.rjust(8)
-      end
-      output_content += file_path.rjust(file_path.size + 1)
-
-      output_content
+      puts "#{output_content_table[:content]}\s#{file_path}"
     end
 
-    puts output_content_list.join("\n")
-    if @file_paths.count > 1
-      puts "#{total_number_of_lines.to_s.rjust(8)}#{total_number_of_words.to_s.rjust(8)}#{total_content_bytesize.to_s.rjust(8)}\stotal" 
-    end
+    return unless @file_paths.count > 1
+
+    puts "#{total_number_of_lines.to_s.rjust(8)}#{total_number_of_words.to_s.rjust(8)}#{total_content_bytesize.to_s.rjust(8)}\stotal"
   end
 
   def output_by_std_input
-    number_of_lines = @std_input.count("\n").to_s.rjust(8)
-    number_of_words = @std_input.split(ANY_WHITE_SPACE_REGEX).count.to_s.rjust(8)
-    content_bytesize = @std_input.bytesize.to_s.rjust(8)
+    output_content_table = build_output_content_table(@std_input)
 
-    output_content = number_of_lines
+    puts output_content_table[:content]
+  end
+
+  def build_output_content_table(input_content)
+    number_of_lines = input_content.count("\n")
+    number_of_words = input_content.split(ANY_WHITE_SPACE_REGEX).count
+    content_bytesize = input_content.bytesize
+
+    output_content = number_of_lines.to_s.rjust(8)
     unless @options[:lines]
-      output_content += number_of_words
-      output_content += content_bytesize
+      output_content += number_of_words.to_s.rjust(8)
+      output_content += content_bytesize.to_s.rjust(8)
     end
 
-    puts output_content
+    { content: output_content, number_of_lines: number_of_lines, number_of_words: number_of_words, content_bytesize: content_bytesize }
   end
 end
 
@@ -82,8 +78,10 @@ if $PROGRAM_NAME == __FILE__
   std_input_text = ''
   if file_paths.empty?
     std_inputs = []
-    while str = $stdin.gets
-      std_inputs << str
+    str_input = $stdin.gets
+    until str_input.nil?
+      std_inputs << str_input
+      str_input = $stdin.gets
     end
     std_input_text = std_inputs.join
   end
