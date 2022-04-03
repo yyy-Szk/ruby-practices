@@ -10,9 +10,9 @@ RSpec.describe WC do
         file_paths = []
         std_input = "hello world!\nhello world!"
 
-        expect { WC.output(file_paths, std_input) }.to(output(<<-CONTENT).to_stdout)
+        expect { WC.output(file_paths, std_input) }.to(output(<<-WORD_COUNT).to_stdout)
        1       4      25
-        CONTENT
+        WORD_COUNT
       end
     end
 
@@ -21,9 +21,9 @@ RSpec.describe WC do
         file_paths = ['spec/06.wc/sample.txt']
         std_input = ''
 
-        expect { WC.output(file_paths, std_input) }.to(output(<<-CONTENT).to_stdout)
+        expect { WC.output(file_paths, std_input) }.to(output(<<-WORD_COUNT).to_stdout)
        1      11      65 spec/06.wc/sample.txt
-        CONTENT
+        WORD_COUNT
       end
     end
 
@@ -32,11 +32,11 @@ RSpec.describe WC do
         file_paths = ['spec/06.wc/sample.txt', 'spec/06.wc/hoge.txt']
         std_input = ''
 
-        expect { WC.output(file_paths, std_input) }.to(output(<<-CONTENT).to_stdout)
+        expect { WC.output(file_paths, std_input) }.to(output(<<-WORD_COUNT).to_stdout)
        1      11      65 spec/06.wc/sample.txt
        0       2      18 spec/06.wc/hoge.txt
        1      13      83 total
-        CONTENT
+        WORD_COUNT
       end
     end
 
@@ -48,9 +48,9 @@ RSpec.describe WC do
           file_paths = []
           std_input = "hello world!\nhello world!"
 
-          expect { WC.output(file_paths, std_input, options) }.to(output(<<-CONTENT).to_stdout)
+          expect { WC.output(file_paths, std_input, options) }.to(output(<<-WORD_COUNT).to_stdout)
        1
-          CONTENT
+          WORD_COUNT
         end
       end
 
@@ -59,9 +59,9 @@ RSpec.describe WC do
           file_paths = ['spec/06.wc/sample.txt']
           std_input = ''
 
-          expect { WC.output(file_paths, std_input, options) }.to(output(<<-CONTENT).to_stdout)
+          expect { WC.output(file_paths, std_input, options) }.to(output(<<-WORD_COUNT).to_stdout)
        1 spec/06.wc/sample.txt
-          CONTENT
+          WORD_COUNT
         end
       end
     end
