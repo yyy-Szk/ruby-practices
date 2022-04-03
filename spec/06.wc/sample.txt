@@ -1,0 +1,2 @@
+This is sample text for wc command practice.
+Don't delete please.
